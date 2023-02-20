@@ -16,5 +16,5 @@ jobs:
     - name: Build & Push Image
       run: |
         echo "${{ secrets.DOCKERPW }}" | docker login -u "alienio" --password-stdin
-        docker image build -t alienio/pydjango:latest .
-        docker push alienio/pydjango:latest
+        docker image build -t alienio/derzan-bot:latest .
+        docker push alienio/derzan-bot:latest
