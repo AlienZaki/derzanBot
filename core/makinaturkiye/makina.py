@@ -21,6 +21,7 @@ class MakinaBot:
             res['title'] = r.html.find('h1.product-detail__title', first=True).text
             res['main_image'] = 'https:' + r.html.find('#myCarousel .item.active img', first=True).attrs['src'].replace(
                 '200x150', '400x300')
+
             specs = r.html.find('.urun-bilgi-tablo tr')
             for s in specs:
                 key = s.find('td[class*=tabletitle]', first=True).text

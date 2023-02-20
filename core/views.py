@@ -1,8 +1,17 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from .makinaturkiye.makina import MakinaBot
+from .makinaturkiye.test import fun
 
 
+
+def test(request, name):
+    fun(name)
+    res = {
+        'success': True,
+        'msg': ''
+    }
+    return JsonResponse(res, safe=False)
 
 def makina(request):
     bot = MakinaBot()
