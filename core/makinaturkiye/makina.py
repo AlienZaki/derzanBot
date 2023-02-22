@@ -75,7 +75,7 @@ class MakinaBot:
     def export_to_csv(self, list_dict):
         field_names = list_dict[0].keys()
         # print(field_names)
-        with open(f'static/temp/export/data.csv', 'w', encoding='utf-8', newline='') as csvfile:
+        with open(f'media/temp/export/data.csv', 'w', encoding='utf-8', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=field_names)
             writer.writeheader()
             writer.writerows(list_dict)

@@ -13,7 +13,7 @@ def remove_image_watermark(image_url):
     print(f"Original size : {image.size}")  # 5464x3640
     image = image.resize((500, 375))
     name = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=35))
-    path = f'static/temp/images/{name}.jpg'
+    path = f'media/temp/images/{name}.jpg'
     image.save(path)
     return f'/{path}'
 
