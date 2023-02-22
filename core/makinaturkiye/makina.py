@@ -40,6 +40,8 @@ class MakinaBot:
             if key and key in features_keys:
                 res[features_keys[key]] = value
 
+        res['Category'] = 'industrial machinery///' + res['Category']
+
         res['Price'] = r.html.find('.product-detail__price', first=True).text
         price_desc = r.html.find('.product-detail__kdv', first=True)
         res['Price desc'] = price_desc and price_desc.text or ''
