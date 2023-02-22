@@ -15,6 +15,12 @@ def export_products_to_XML(products_data, path=PATH):
     # create the root element
     root = ET.Element("Root")
 
+    # create last update element
+    tz = pytz.timezone('Europe/Istanbul')
+    current_time = datetime.now(tz).strftime('%d-%m-%Y %I:%M %p')
+    last_update = ET.SubElement(root, "Last_update")
+    last_update.text = current_time
+
     # create the products element
     products = ET.SubElement(root, "Products")
 
@@ -77,12 +83,6 @@ def export_products_to_XML(products_data, path=PATH):
 
     # Add the new product to the root element
     # root.find('Products').append(new_product)
-
-
-    tz = pytz.timezone('Europe/Istanbul')
-    current_time = datetime.now(tz).strftime('%d-%m-%Y %I:%M %p')
-    last_update = ET.SubElement(root, "Last_update")
-    last_update.text = current_time
 
 
     # Save the updated XML file

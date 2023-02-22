@@ -66,7 +66,7 @@ class MakinaBot:
         r = self.session.get(url)
         urls = r.html.find('#product-container .product-list-mt__inner > a[class*=mt__link]')
         products_urls = [u.attrs['href'] for u in urls]
-        for url in products_urls[:1]:
+        for url in products_urls[:10]:
             res = self.scrape_product_page(url)
             products.append(res)
 
