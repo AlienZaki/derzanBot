@@ -76,7 +76,7 @@ def export_products_to_XML(products_data, path=PATH):
         description.text = p['Description']
 
         images = ET.SubElement(new_product, 'Images')
-        for i, image_url in enumerate(p['Images']):
+        for i, image_url in enumerate(p['Images'], 1):
             img = ET.SubElement(images, f'image{i}')
             img.text = image_url
 
