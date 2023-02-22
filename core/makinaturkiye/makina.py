@@ -1,6 +1,7 @@
 import csv
 from requests_html import HTMLSession
 from .utils import *
+from .exporter import *
 
 
 
@@ -50,13 +51,13 @@ class MakinaBot:
 
         res['Description'] = r.html.find('#aciklama', first=True).html.replace('\n', '').strip()
         images = r.html.find('#kresim a > img')
-        clean_images = []
+        res['Images'] = []
         for i, image in enumerate(images, 1):
             image_url = 'https:' + image.attrs['src']
             clean_image = f'https://{self.host}{remove_image_watermark(image_url)}'
-            clean_images.append(clean_image)
+            res['Images'].append(clean_image)
 
-        res['Images'] = ' , '.join(clean_images)
+
         print(res)
         return res
 
@@ -65,20 +66,24 @@ class MakinaBot:
         r = self.session.get(url)
         urls = r.html.find('#product-container .product-list-mt__inner > a[class*=mt__link]')
         products_urls = [u.attrs['href'] for u in urls]
-        for url in products_urls[:5]:
+        for url in products_urls[:1]:
             res = self.scrape_product_page(url)
             products.append(res)
 
-        self.export_to_csv(products)
+        # self.export_to_csv(products)
+        export_products_to_XML(products)
         return products
 
-    def export_to_csv(self, list_dict):
-        field_names = list_dict[0].keys()
+    def export_to_csv(self, products):
+        for p in products:
+            p['Images'] = ' , '.join(p['Images'])
+            print(p['Images'])
+        field_names = products[0].keys()
         # print(field_names)
         with open(f'media/temp/export/data.csv', 'w', encoding='utf-8', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=field_names)
             writer.writeheader()
-            writer.writerows(list_dict)
+            writer.writerows(products)
 
 
 
