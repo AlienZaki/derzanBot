@@ -6,15 +6,16 @@ from .makinaturkiye.test import fun
 
 
 def test(request, name):
-    fun(name)
+    path = fun(name)
+
     res = {
         'success': True,
-        'msg': ''
+        'msg': path
     }
     return JsonResponse(res, safe=False)
 
 def makina(request):
-    bot = MakinaBot()
+    bot = MakinaBot(host=request.get_host())
     products = bot.get_page_products('https://www.makinaturkiye.com/baski-kagit-matbaa-makinalari-ve-ekipmanlari-c-115466?page=1')
     res = {
         'products': products

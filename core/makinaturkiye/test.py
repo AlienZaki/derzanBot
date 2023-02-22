@@ -1,6 +1,6 @@
 
-
-
 def fun(name):
-    with open(f'static/temp/images/{name}.jpg', 'w') as f:
+    path = f'static/temp/images/{name}.jpg'
+    with open(path, 'w') as f:
         f.write('')
+        return path
