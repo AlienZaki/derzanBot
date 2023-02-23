@@ -1,16 +1,14 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from .makinaturkiye.makina import MakinaBot
-from .makinaturkiye.test import fun
+from .makinaturkiye.test import func
 
 
 
-def test(request, name):
-    path = fun(name)
-
+def test(request):
     res = {
         'success': True,
-        'msg': path
+        'products': func()
     }
     return JsonResponse(res, safe=False)
 
