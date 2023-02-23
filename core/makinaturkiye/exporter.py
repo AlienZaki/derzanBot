@@ -7,10 +7,11 @@ from django.conf import settings
 
 
 
-directory_path = os.path.join(settings.MEDIA_ROOT, 'products')
+directory_path = os.path.join('\data', 'products')
 if not os.path.exists(directory_path):
     os.makedirs(directory_path)
 file_path = os.path.join(directory_path, 'makina.xml')
+# input(file_path)
 
 
 
