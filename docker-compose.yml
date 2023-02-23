@@ -3,7 +3,7 @@ version: '3.4'
 services:
   derzanbot:
     image: derzanbot
-    container_name: derzanbot
+    container_name: backend
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -12,19 +12,21 @@ services:
     env_file:
       - .env
 
-#    volumes:
-#      - .:/code
+    volumes:
+      - .:/data
     depends_on:
       - redis
       - celery
   redis:
+    container_name: redis
     image: redis:alpine3.17
   celery:
+    container_name: celery
     build: .
     command: celery -A derzanBot worker -l info
     env_file:
       - .env
-#    volumes:
-#      - .:/code
+    volumes:
+      - .:/data
     depends_on:
       - redis
