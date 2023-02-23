@@ -66,12 +66,12 @@ def scrape_product_details(url):
 
         res['Description'] = r.html.find('#aciklama', first=True).html.replace('\n', '').strip()
         images = r.html.find('#kresim a > img')
-        res['Images'] = images
-        # res['Images'] = []
-        # for i, image in enumerate(images, 1):
-        #     image_url = 'https:' + image.attrs['src']
-        #     clean_image = f'https://{host}{remove_image_watermark(image_url)}'
-        #     res['Images'].append(clean_image)
+
+        res['Images'] = []
+        for i, image in enumerate(images, 1):
+            image_url = 'https:' + image.attrs['src']
+            clean_image = image_url #f'https://{host}{remove_image_watermark(image_url)}'
+            res['Images'].append(clean_image)
 
 
         # print(res)

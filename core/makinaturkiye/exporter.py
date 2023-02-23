@@ -87,11 +87,11 @@ def export_products_to_XML(products_data, path=PATH):
 
     # Save the updated XML file
     tree = ET.ElementTree(root)
-    # tree.write(path, encoding='utf-8')
+    tree.write(path, encoding='utf-8')
 
     # Save the updated XML file
-    with open(path, 'w', encoding='utf-8') as f:
-        f.write(tostring(root).decode())
+    # with open(path, 'w', encoding='utf-8') as f:
+    #     f.write(tostring(root).decode())
 
 
 
