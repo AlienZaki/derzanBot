@@ -8,13 +8,12 @@ from .tasks import scrape_products, mytask
 
 
 def test(request):
-    run()
     # scrape_products.delay()
-    # res = scrape_products.delay()
+    res = scrape_products.delay()
     res = {
         'success': True,
         # 'products': run()
-        # 'data': res.id
+        'data': res.id
     }
     return JsonResponse(res, safe=False)
 
