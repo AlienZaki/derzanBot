@@ -137,8 +137,8 @@ def run():
 
 if __name__ == '__main__':
     products = run()
-    print(products)
+    # print(products)
     from exporter import export_products_to_XML
-    export_products_to_XML(products, path='test.xml')
+    export_products_to_XML(products, path='tesst.xml')
 
 
