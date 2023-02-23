@@ -15,11 +15,11 @@ services:
       - .:/code
     depends_on:
       - redis
-      - celery
+#      - celery
   redis:
     image: redis:alpine3.17
-  celery:
-    image: alienio/derzanbot-celery:latest
+#  celery:
+#    image: alienio/derzanbot-celery:latest
 #    build: .
 #    command: celery -A derzanBot worker -l info
 #    env_file:
