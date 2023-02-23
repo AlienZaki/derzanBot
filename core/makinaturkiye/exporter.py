@@ -58,7 +58,7 @@ def export_products_to_XML(products_data, path=PATH):
         delivery_status.text = p['Delivery status']
 
         guarantee = ET.SubElement(new_product, 'Guarantee')
-        guarantee.text = p['Guarantee']
+        guarantee.text = p.get('Guarantee', '')
 
         price = ET.SubElement(new_product, 'Price')
         price.text = p['Price']

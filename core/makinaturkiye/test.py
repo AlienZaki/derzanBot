@@ -1,6 +1,7 @@
 import logging, time
 from requests_html import HTMLSession
 from concurrent.futures import ThreadPoolExecutor as Pool
+import traceback
 
 
 
@@ -12,6 +13,7 @@ logging.basicConfig(
     # filename='logs.log'
 )
 session = HTMLSession()
+host = '127.0.0.1:8000'
 
 
 def get_categories_urls():
@@ -20,6 +22,60 @@ def get_categories_urls():
     logging.info(f'Categories: {len(category_urls)}')
     return category_urls
 
+
+def scrape_product_details(url):
+        r = session.get(url)
+        res = {'Vendor': 'Makina', 'Language': 'tr'}
+        res['Vendor URL'] = url
+        res['Product name'] = r.html.find('h1.product-detail__title', first=True).text
+        # image_url = 'https:' + r.html.find('#myCarousel .item.active img', first=True).attrs['src']
+        # image = remove_image_watermark(image_url)
+        # res['main_image'] = image
+
+        features = r.html.find('.urun-bilgi-tablo tr')
+        features_keys = {
+            'İlan No': 'Product code',
+            'Kategori': 'Category',
+            'Marka': 'Brand',
+            'Ürün Tipi': 'Model type',
+            # 'Ürün Durumu': '',
+            'Menşei': 'Origin',
+            'Teslim Durumu': 'Delivery status',
+            # 'Konum': '',
+            'Kısa Detay': 'Guarantee',
+            # 'Satış Detayı': '',
+        }
+        for f in features:
+            key = f.find('td[class*=tabletitle]', first=True).text.replace(':', '').strip()
+            value = f.find('td[class*=tablevalue]', first=True).text
+
+            if key and key in features_keys:
+                res[features_keys[key]] = value
+
+
+        res['Category'] = 'industrial machinery///' + res['Category']
+
+        res['Price'] = r.html.find('.product-detail__price', first=True).text
+        price_desc = r.html.find('.product-detail__kdv', first=True)
+        res['Price desc'] = price_desc and price_desc.text or ''
+
+        res['Phone'] = r.html.find('[href*=tel]', first=True).text.replace(' ', '')
+        whatsapp = r.html.find('[href*="whatsapp.com"]', first=True)
+        whatsapp = whatsapp and '+' + whatsapp.attrs['href'].split('phone=')[1].split('&')[0] or ''
+        res['Whatsapp'] = whatsapp
+
+        res['Description'] = r.html.find('#aciklama', first=True).html.replace('\n', '').strip()
+        images = r.html.find('#kresim a > img')
+        res['Images'] = images
+        # res['Images'] = []
+        # for i, image in enumerate(images, 1):
+        #     image_url = 'https:' + image.attrs['src']
+        #     clean_image = f'https://{host}{remove_image_watermark(image_url)}'
+        #     res['Images'].append(clean_image)
+
+
+        # print(res)
+        return res
 
 def get_category_pages_urls(category_url):
     r = session.get(category_url)
@@ -42,12 +98,12 @@ def get_page_products_urls(page_url):
     # print(len(products_urls))
     return products_urls
 
-def func():
+def run():
     start = time.perf_counter()
     cats = get_categories_urls()
     total_pages = []
     with Pool() as pool:
-        for pages in pool.map(get_category_pages_urls, cats):
+        for pages in pool.map(get_category_pages_urls, cats[:1]):
             total_pages.extend(pages)
             # print(len(total_pages))
 
@@ -58,7 +114,7 @@ def func():
     start = time.perf_counter()
     total_products = []
     with Pool() as pool:
-        for products in pool.map(get_page_products_urls, total_pages[:100]):
+        for products in pool.map(get_page_products_urls, total_pages[:1]):
             total_products.extend(products)
             # print(len(total_products))
 
@@ -66,8 +122,17 @@ def func():
     stop = time.perf_counter()
     print('Time:', stop - start)
 
-    return total_products
+
+    products_results = []
+    with Pool() as pool:
+        for product in pool.map(scrape_product_details, total_products[:5]):
+            products_results.append(product)
+
+
+    return products_results
 
 
 if __name__ == '__main__':
-    func()
+    products = run()
+    print(products)
+

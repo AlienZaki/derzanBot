@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_beat',
     'core',
 ]
 
@@ -113,6 +114,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+# Celery
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://localhost:6379/0")
+# CELERY_BEAT_SCHEDULE = {
+#     'SchecduledTestTask': {
+#         'task': 'core.tasks.mytask',
+#         'schedule': 60
+#     }
+# }
+
 
 
 # Default primary key field type

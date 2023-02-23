@@ -1,14 +1,19 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from .makinaturkiye.makina import MakinaBot
-from .makinaturkiye.test import func
+# from .makinaturkiye.test import run
+# from .makinaturkiye.tasks import scrape_products
+from .tasks import scrape_products, mytask
 
 
 
 def test(request):
+    # scrape_products.delay()
+    res = scrape_products.delay()
     res = {
         'success': True,
-        'products': func()
+        # 'products': run()
+        'data': res.id
     }
     return JsonResponse(res, safe=False)
 

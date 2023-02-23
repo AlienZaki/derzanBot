@@ -8,3 +8,22 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - 8000:8000
+    env_file:
+      - .env
+
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+      - celery
+  redis:
+    image: redis:alpine3.17
+  celery:
+    build: .
+    command: celery -A derzanBot worker -l info
+    env_file:
+      - .env
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
