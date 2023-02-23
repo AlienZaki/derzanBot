@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 
-PATH = os.path.join(os.path.dirname(__file__), 'media', 'products', 'makina.xml')
+PATH = os.path.join(os.path.dirname(__file__), 'makina_data.xml') #'media', 'products',
 # PATH = 'makina_data.xml'
 
 
