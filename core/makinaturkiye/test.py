@@ -24,6 +24,7 @@ def get_categories_urls():
 
 
 def scrape_product_details(url):
+    try:
         r = session.get(url)
         res = {'Vendor': 'Makina', 'Language': 'tr'}
         res['Vendor URL'] = url
@@ -76,6 +77,8 @@ def scrape_product_details(url):
 
         # print(res)
         return res
+    except Exception as e:
+        traceback.print_exc()
 
 def get_category_pages_urls(category_url):
     r = session.get(category_url)
@@ -125,7 +128,7 @@ def run():
 
     products_results = []
     with Pool() as pool:
-        for product in pool.map(scrape_product_details, total_products[:5]):
+        for product in pool.map(scrape_product_details, total_products[:1]):
             products_results.append(product)
 
 
@@ -135,4 +138,7 @@ def run():
 if __name__ == '__main__':
     products = run()
     print(products)
+    from exporter import export_products_to_XML
+    export_products_to_XML(products, path='test.xml')
+
 
