@@ -3,15 +3,17 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 import pytz
 from datetime import datetime
+from django.conf import settings
 
 
 
-PATH = os.path.join(os.path.dirname(__file__), 'makina_data.xml') #'media', 'products',
+# PATH = os.path.join(os.path.dirname(__file__), 'makina_data.xml') #'media', 'products',
+file_path = os.path.join(settings.MEDIA_ROOT, 'employees.xml')
 # PATH = 'makina_data.xml'
 
 
 
-def export_products_to_XML(products_data, path=PATH):
+def export_products_to_XML(products_data, file_path=file_path):
     # create the root element
     root = ET.Element("Root")
 
@@ -90,7 +92,7 @@ def export_products_to_XML(products_data, path=PATH):
     # tree.write(path, encoding='utf-8')
 
     # Save the updated XML file
-    with open(path, 'wb') as f:
+    with open(file_path, 'wb') as f:
         f.write(ET.tostring(root))
     print('Saved.')
 
@@ -109,4 +111,4 @@ if __name__ == '__main__':
          }
     ]
 
-    export_products_to_XML(products, path='file.xml')
+    export_products_to_XML(products, file_path='file.xml')
