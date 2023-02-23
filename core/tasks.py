@@ -16,7 +16,8 @@ def mytask():
 def scrape_products():
     print('Task Started...')
     products = run()
+    print('Exporting...')
     export_products_to_XML(products)
-    print('Task Finished')
+    print('Task Finished.')
     # return products
 

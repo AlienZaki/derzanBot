@@ -92,6 +92,7 @@ def export_products_to_XML(products_data, path=PATH):
     # Save the updated XML file
     with open(path, 'wb') as f:
         f.write(ET.tostring(root))
+    print('Saved.')
 
 
 
