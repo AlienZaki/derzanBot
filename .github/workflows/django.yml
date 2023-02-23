@@ -17,6 +17,7 @@ jobs:
       run: |
         echo "${{ secrets.DOCKERPW }}" | docker login -u "alienio" --password-stdin
         docker compose build
+        docker tag derzanbot alienio/derzan-bot:latest
         docker push alienio/derzan-bot:latest
         curl -X POST \
         -H "Content-Type: application/json" \
