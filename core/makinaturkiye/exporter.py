@@ -8,7 +8,7 @@ from django.conf import settings
 
 
 # PATH = os.path.join(os.path.dirname(__file__), 'makina_data.xml') #'media', 'products',
-file_path = os.path.join(settings.MEDIA_ROOT, 'employees.xml')
+file_path = os.path.join(settings.MEDIA_ROOT, 'products', 'makina.xml')
 # PATH = 'makina_data.xml'
 
 
@@ -94,7 +94,7 @@ def export_products_to_XML(products_data, file_path=file_path):
     # Save the updated XML file
     with open(file_path, 'wb') as f:
         f.write(ET.tostring(root))
-    print('Saved.')
+    print('Saved:', file_path)
 
 
 

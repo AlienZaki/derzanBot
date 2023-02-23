@@ -1,6 +1,7 @@
 import logging, time
 from requests_html import HTMLSession
 from concurrent.futures import ThreadPoolExecutor as Pool
+from .exporter import export_products_to_XML
 import traceback
 
 
@@ -131,8 +132,8 @@ def run():
         for product in pool.map(scrape_product_details, total_products[:1]):
             products_results.append(product)
 
-
-    return products_results
+    print('Exporting...')
+    export_products_to_XML(products_results)
 
 
 if __name__ == '__main__':

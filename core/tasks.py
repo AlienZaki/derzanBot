@@ -15,9 +15,7 @@ def mytask():
 @shared_task()
 def scrape_products():
     print('Task Started...')
-    products = run()
-    print('Exporting...')
-    export_products_to_XML(products)
+    run()
     print('Task Finished.')
     # return products
 
