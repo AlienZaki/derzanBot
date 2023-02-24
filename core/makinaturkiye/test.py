@@ -72,7 +72,7 @@ def scrape_product_details(url):
         res['Images'] = []
         for i, image in enumerate(images, 1):
             image_url = 'https:' + image.attrs['src']
-            clean_image = image_url #f'https://{host}{remove_image_watermark(image_url)}'
+            clean_image = f'https://{host}{remove_image_watermark(image_url)}'
             res['Images'].append(clean_image)
 
 
@@ -117,7 +117,7 @@ def run():
 
     start = time.perf_counter()
     total_products = []
-    with Pool(max_workers=50) as pool:
+    with Pool(max_workers=10) as pool:
         for products in pool.map(get_page_products_urls, total_pages[:1]):
             total_products.extend(products)
             print(len(total_products))
@@ -128,7 +128,7 @@ def run():
 
 
     products_results = []
-    with Pool(max_workers=50) as pool:
+    with Pool(max_workers=10) as pool:
         for product in pool.map(scrape_product_details, total_products[:]):
             products_results.append(product)
             # print(product)
