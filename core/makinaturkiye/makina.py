@@ -78,7 +78,7 @@ class MakinaBot:
             res['Images'] = []
             with Pool(max_workers=10) as pool:
                 for img in pool.map(remove_image_watermark, images):
-                    clean_image = f'https://{self.host}{img}'
+                    clean_image = f'http://{self.host}{img}'
                     res['Images'].append(clean_image)
 
 
@@ -115,7 +115,7 @@ class MakinaBot:
         cats = self.get_categories_urls()
         total_pages = []
         with Pool() as pool:
-            for pages in pool.map(self.get_category_pages_urls, cats[:1]):
+            for pages in pool.map(self.get_category_pages_urls, cats[:]):
                 total_pages.extend(pages)
                 # print(len(total_pages))
 
