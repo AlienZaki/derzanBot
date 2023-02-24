@@ -1,4 +1,4 @@
-import requests
+import requests, os
 import random
 import string
 from PIL import Image
