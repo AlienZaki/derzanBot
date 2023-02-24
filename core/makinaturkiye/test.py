@@ -118,7 +118,7 @@ def run():
     start = time.perf_counter()
     total_products = []
     with Pool() as pool:
-        for products in pool.map(get_page_products_urls, total_pages[:1]):
+        for products in pool.map(get_page_products_urls, total_pages[:]):
             total_products.extend(products)
             # print(len(total_products))
 
@@ -129,7 +129,7 @@ def run():
 
     products_results = []
     with Pool() as pool:
-        for product in pool.map(scrape_product_details, total_products[:1]):
+        for product in pool.map(scrape_product_details, total_products[:]):
             products_results.append(product)
 
     print('Exporting...')
