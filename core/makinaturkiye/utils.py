@@ -19,7 +19,7 @@ def remove_image_watermark(image_url):
         os.makedirs(directory_path)
     file_path = os.path.join(directory_path, f'{name}.jpg')
     image.save(file_path)
-    return f'/{file_path}'
+    return {file_path}
 
     # with open(path, 'wb') as f:
     #     f.write(r.content)
