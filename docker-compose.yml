@@ -13,7 +13,7 @@ services:
       - .env
 
     volumes:
-      - shared_data:/data/shared_data
+      - shared_data:/media
     depends_on:
       - redis
       - celery
