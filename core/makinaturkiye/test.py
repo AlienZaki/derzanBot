@@ -66,7 +66,7 @@ def scrape_product_details(url):
         whatsapp = whatsapp and '+' + whatsapp.attrs['href'].split('phone=')[1].split('&')[0] or ''
         res['Whatsapp'] = whatsapp
 
-        res['Description'] = r.html.find('#aciklama', first=True).html.replace('\n', '').strip()
+        res['Description'] = r.html.find('#aciklama', first=True).html.replace('\n', '').strip().replace('//s.makina', 'https://s.makina')
         images = r.html.find('#kresim a > img')
 
         res['Images'] = []
@@ -131,7 +131,7 @@ def run():
     with Pool(max_workers=50) as pool:
         for product in pool.map(scrape_product_details, total_products[:]):
             products_results.append(product)
-            print(product)
+            # print(product)
 
     print('Exporting...')
     export_products_to_XML(products_results)
