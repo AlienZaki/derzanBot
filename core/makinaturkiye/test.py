@@ -119,7 +119,7 @@ def run():
     start = time.perf_counter()
     total_products = []
     with Pool(max_workers=10) as pool:
-        for products in pool.map(get_page_products_urls, total_pages[:1]):
+        for products in pool.map(get_page_products_urls, total_pages[:5]):
             total_products.extend(products)
             print(len(total_products))
 
