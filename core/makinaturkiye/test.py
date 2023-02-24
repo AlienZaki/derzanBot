@@ -60,8 +60,8 @@ def scrape_product_details(url):
         res['Price'] = r.html.find('.product-detail__price', first=True).text
         price_desc = r.html.find('.product-detail__kdv', first=True)
         res['Price desc'] = price_desc and price_desc.text or ''
-
-        res['Phone'] = r.html.find('[href*=tel]', first=True).text.replace(' ', '')
+        phone = r.html.find('[href*=tel]', first=True)
+        res['Phone'] = phone and phone.text.replace(' ', '') or ''
         whatsapp = r.html.find('[href*="whatsapp.com"]', first=True)
         whatsapp = whatsapp and '+' + whatsapp.attrs['href'].split('phone=')[1].split('&')[0] or ''
         res['Whatsapp'] = whatsapp
