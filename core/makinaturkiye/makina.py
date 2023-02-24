@@ -73,13 +73,14 @@ class MakinaBot:
 
             res['Description'] = r.html.find('#aciklama', first=True).html.replace('\n', '').strip().replace(
                 '//s.makina', 'https://s.makina')
-            images = r.html.find('#kresim a > img')
+            images = ['https:' + img.attrs['src'] for img in r.html.find('#kresim a > img')]
 
             res['Images'] = []
-            for i, image in enumerate(images, 1):
-                image_url = 'https:' + image.attrs['src']
-                clean_image = f'https://{self.host}{remove_image_watermark(image_url)}'
-                res['Images'].append(clean_image)
+            with Pool(max_workers=10) as pool:
+                for img in pool.map(remove_image_watermark, images):
+                    clean_image = f'https://{self.host}{img}'
+                    res['Images'].append(clean_image)
+
 
             # print(res)
             return res
@@ -114,23 +115,26 @@ class MakinaBot:
         cats = self.get_categories_urls()
         total_pages = []
         with Pool() as pool:
-            for pages in pool.map(self.get_category_pages_urls, cats[:5]):
+            for pages in pool.map(self.get_category_pages_urls, cats[:1]):
                 total_pages.extend(pages)
                 # print(len(total_pages))
 
         logging.info(f'Total Pages URLs: {len(total_pages)}')
 
+        logging.info('Getting products URLs...')
         total_products = []
         with Pool(max_workers=10) as pool:
-            for products in pool.map(self.get_page_products_urls, total_pages[:1]):
+            for products in pool.map(self.get_page_products_urls, total_pages[:]):
                 total_products.extend(products)
 
         logging.info(f'Total products URLs: {len(total_products)}')
 
+        logging.info('Scraping products details...')
         products_results = []
         with Pool(max_workers=10) as pool:
-            total_products = total_products[:50]
+            # total_products = total_products[:50]
             for i, product in enumerate(pool.map(self.scrape_product_details, total_products), 1):
+                logging.info(f'Progress: [{i}/{len(total_products)}]')
                 if product:
                     products_results.append(product)
                 else:
