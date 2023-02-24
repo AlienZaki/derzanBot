@@ -2,6 +2,7 @@ import logging, time
 from requests_html import HTMLSession
 from concurrent.futures import ThreadPoolExecutor as Pool
 from .exporter import export_products_to_XML
+from .utils import remove_image_watermark
 import traceback
 
 
