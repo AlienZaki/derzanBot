@@ -104,7 +104,6 @@ def get_page_products_urls(page_url):
     return products_urls
 
 def run():
-    start = time.perf_counter()
     cats = get_categories_urls()
     total_pages = []
     with Pool() as pool:
@@ -113,19 +112,14 @@ def run():
             # print(len(total_pages))
 
     logging.info(f'Total Pages URLs: {len(total_pages)}')
-    stop = time.perf_counter()
-    print('Time:', stop - start)
 
-    start = time.perf_counter()
+
     total_products = []
     with Pool(max_workers=10) as pool:
         for products in pool.map(get_page_products_urls, total_pages[:5]):
             total_products.extend(products)
-            print(len(total_products))
 
     logging.info(f'Total products URLs: {len(total_products)}')
-    stop = time.perf_counter()
-    print('Time:', stop - start)
 
 
     products_results = []
