@@ -1,9 +1,14 @@
 import logging, time
+import traceback
 from requests_html import HTMLSession
 from concurrent.futures import ThreadPoolExecutor as Pool
-from .exporter import export_products_to_XML
-from .utils import remove_image_watermark
-import traceback
+try:
+    from .exporter import export_products_to_XML, append_products, create_new_XML
+    from .utils import remove_image_watermark
+except:
+    from exporter import export_products_to_XML, append_products, create_new_XML
+    from utils import remove_image_watermark
+
 
 
 
@@ -103,7 +108,11 @@ def get_page_products_urls(page_url):
     # print(len(products_urls))
     return products_urls
 
-def run():
+def run(format=False):
+    file_path = 'Zaki.xml'
+    if format:
+        create_new_XML(file_path)
+
     cats = get_categories_urls()
     total_pages = []
     with Pool() as pool:
@@ -116,7 +125,7 @@ def run():
 
     total_products = []
     with Pool(max_workers=10) as pool:
-        for products in pool.map(get_page_products_urls, total_pages[:]):
+        for products in pool.map(get_page_products_urls, total_pages[:1]):
             total_products.extend(products)
 
     logging.info(f'Total products URLs: {len(total_products)}')
@@ -124,18 +133,27 @@ def run():
 
     products_results = []
     with Pool(max_workers=10) as pool:
-        for product in pool.map(scrape_product_details, total_products[:]):
+        total_products = total_products[:5]
+        for i, product in enumerate(pool.map(scrape_product_details, total_products), 1):
             products_results.append(product)
             # print(product)
 
-    print('Exporting...')
-    export_products_to_XML(products_results)
+            # Export
+            if i % 50 == 0 or i == len(total_products):
+                print('Saving...')
+                append_products(products_results, file_path=file_path)
+                products_results = []
+
+
+
+    # print('Exporting...')
+    # export_products_to_XML(products_results)
 
 
 if __name__ == '__main__':
-    products = run()
+    products = run(format=True)
     # print(products)
-    from exporter import export_products_to_XML
-    export_products_to_XML(products, path='tesst.xml')
+    # from exporter import export_products_to_XML
+    # export_products_to_XML(products, path='tesst.xml')
 
 

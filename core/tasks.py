@@ -1,6 +1,6 @@
 # tasks.py
 from celery import shared_task
-from core.makinaturkiye.test import run
+from core.makinaturkiye.makina import MakinaBot
 from core.makinaturkiye.exporter import export_products_to_XML
 import time
 
@@ -13,9 +13,9 @@ def mytask():
 
 
 @shared_task()
-def scrape_products():
+def scrape_products(host, new_file):
     print('Task Started...')
-    run()
+    MakinaBot(host).run(new_file)
     print('Task Finished.')
     # return products
 

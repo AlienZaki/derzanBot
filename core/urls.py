@@ -3,6 +3,6 @@ from .views import makina, test
 
 
 urlpatterns = [
-    path('test/', test),
+    path('test/<int:new_file>', test),
     path('makina/', makina),
 ]

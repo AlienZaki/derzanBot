@@ -14,8 +14,64 @@ file_path = os.path.join(directory_path, 'makina.xml')
 # input(file_path)
 
 
+def create_new_XML(file_path=file_path):
+    # create the root element
+    root = ET.Element("Root")
+
+    # create last update element
+    tz = pytz.timezone('Europe/Istanbul')
+    current_time = datetime.now(tz).strftime('%d-%m-%Y %I:%M %p')
+    last_update = ET.SubElement(root, "Last_update")
+    last_update.text = current_time
+
+    # create the products element
+    products = ET.SubElement(root, "Products")
+
+    # Save the updated XML file
+    with open(file_path, 'wb') as f:
+        f.write(ET.tostring(root))
+    print('Saved:', file_path)
 
 
+def append_products(products_data, file_path=file_path):
+    if not os.path.exists(file_path):
+        create_new_XML(file_path)
+
+    # Load the existing XML file
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+
+    for p in products_data:
+        # Append the new product to the 'Products' element
+        new_product = ET.SubElement(root.find('Products'), 'Product')
+        ET.SubElement(new_product, 'Vendor').text = p['Vendor']
+        ET.SubElement(new_product, 'Language').text = p['Language']
+        ET.SubElement(new_product, 'Productname').text = p['Product name']
+        ET.SubElement(new_product, 'Productcode').text = p['Product code']
+        ET.SubElement(new_product, 'Category').text = p.get('Category', '')
+        ET.SubElement(new_product, 'Brand').text = p.get('Brand', '')
+        ET.SubElement(new_product, 'Modeltype').text = p.get('Model type', '')
+        ET.SubElement(new_product, 'Origin').text = p.get('Origin', '')
+        ET.SubElement(new_product, 'Delivery_status').text = p.get('Delivery status', '')
+        ET.SubElement(new_product, 'Guarantee').text = p.get('Guarantee', '')
+        ET.SubElement(new_product, 'Price').text = p.get('Price', '')
+        ET.SubElement(new_product, 'Price_Description').text = p['Price desc']
+        ET.SubElement(new_product, 'Phone').text = p.get('Phone', '')
+        ET.SubElement(new_product, 'Whatsapp').text = p.get('Whatsapp', '')
+        ET.SubElement(new_product, 'Description').text = p['Description']
+        images = ET.SubElement(new_product, 'Images')
+        for i, image_url in enumerate(p['Images'], 1):
+            img = ET.SubElement(images, f'image{i}')
+            img.text = image_url
+
+    # Update the 'Last_update' element with the current date and time
+    last_update = root.find('Last_update')
+    tz = pytz.timezone('Europe/Istanbul')
+    last_update.text = datetime.now(tz).strftime('%d-%m-%Y %I:%M %p')
+
+    # Write the updated XML file
+    tree.write(file_path)
+    print('Saved!')
 def export_products_to_XML(products_data, file_path=file_path):
     # create the root element
     root = ET.Element("Root")
@@ -35,51 +91,21 @@ def export_products_to_XML(products_data, file_path=file_path):
         new_product = ET.SubElement(products, 'Product')
 
         # Add the sub-elements to the new product element
-        vendor = ET.SubElement(new_product, 'Vendor')
-        vendor.text = p['Vendor']
-
-        language = ET.SubElement(new_product, 'Language')
-        language.text = p['Language']
-
-        product_name = ET.SubElement(new_product, 'Productname')
-        product_name.text = p['Product name']
-
-        product_code = ET.SubElement(new_product, 'Productcode')
-        product_code.text = p['Product code']
-
-        category = ET.SubElement(new_product, 'Category')
-        category.text = p['Category']
-
-        brand = ET.SubElement(new_product, 'Brand')
-        brand.text = p['Brand']
-
-        model_type = ET.SubElement(new_product, 'Modeltype')
-        model_type.text = p['Model type']
-
-        origin = ET.SubElement(new_product, 'Origin')
-        origin.text = p['Origin']
-
-        delivery_status = ET.SubElement(new_product, 'Delivery_status')
-        delivery_status.text = p['Delivery status']
-
-        guarantee = ET.SubElement(new_product, 'Guarantee')
-        guarantee.text = p.get('Guarantee', '')
-
-        price = ET.SubElement(new_product, 'Price')
-        price.text = p['Price']
-
-        price_description = ET.SubElement(new_product, 'Price_Description')
-        price_description.text = p['Price desc']
-
-        phone = ET.SubElement(new_product, 'Phone')
-        phone.text = p['Phone']
-
-        whatsapp = ET.SubElement(new_product, 'Whatsapp')
-        whatsapp.text = p['Whatsapp']
-
-        description = ET.SubElement(new_product, 'Description')
-        description.text = p['Description']
-
+        ET.SubElement(new_product, 'Vendor').text = p['Vendor']
+        ET.SubElement(new_product, 'Language').text = p['Language']
+        ET.SubElement(new_product, 'Productname').text = p['Product name']
+        ET.SubElement(new_product, 'Productcode').text = p['Product code']
+        ET.SubElement(new_product, 'Category').text = p.get('Category', '')
+        ET.SubElement(new_product, 'Brand').text = p.get('Brand', '')
+        ET.SubElement(new_product, 'Modeltype').text = p.get('Model type', '')
+        ET.SubElement(new_product, 'Origin').text = p.get('Origin', '')
+        ET.SubElement(new_product, 'Delivery_status').text = p.get('Delivery status', '')
+        ET.SubElement(new_product, 'Guarantee').text = p.get('Guarantee', '')
+        ET.SubElement(new_product, 'Price').text = p.get('Price', '')
+        ET.SubElement(new_product, 'Price_Description').text = p['Price desc']
+        ET.SubElement(new_product, 'Phone').text = p.get('Phone', '')
+        ET.SubElement(new_product, 'Whatsapp').text = p.get('Whatsapp', '')
+        ET.SubElement(new_product, 'Description').text = p['Description']
         images = ET.SubElement(new_product, 'Images')
         for i, image_url in enumerate(p['Images'], 1):
             img = ET.SubElement(images, f'image{i}')
@@ -113,5 +139,6 @@ if __name__ == '__main__':
          'Images': 'https://127.0.0.1:8000/media/temp/images/SB6u6CQWyyYloC2N4egirjlZHeYO2Aah19x.jpg , https://127.0.0.1:8000/media/temp/images/S71iX9um8wXRh2TQbGFdf62lRd1MrTHnAVd.jpg , https://127.0.0.1:8000/media/temp/images/ahG8VKebhknJ3VI4Grle5UkoDTlKP8zdSGp.jpg , https://127.0.0.1:8000/media/temp/images/oUzAHxD9ef2JsGbH8ThvGqDBpIdtxjOZ3Nm.jpg , https://127.0.0.1:8000/media/temp/images/IQ9t6cwEWiCpqsWSb6tvZ9alSzpkQJcHbf9.jpg , https://127.0.0.1:8000/media/temp/images/8vp4JkICr5LElOYZ8ORV9aFEvjWiZsOe15C.jpg , https://127.0.0.1:8000/media/temp/images/Kr5G2dAmtQlzVYDtc3kzrvtMu13j2XlDJtR.jpg , https://127.0.0.1:8000/media/temp/images/ZZvuk6u2a2uHXLM2MqF0OLaqy1rt85z5XXr.jpg'
          }
     ]
-
-    export_products_to_XML(products, file_path='file.xml')
+    #
+    # export_products_to_XML(products, file_path='file.xml')
+    # remove_all_products(file_path='file.xml')

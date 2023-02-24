@@ -7,9 +7,9 @@ from .tasks import scrape_products, mytask
 
 
 
-def test(request):
+def test(request, new_file):
     # scrape_products.delay()
-    res = scrape_products.delay()
+    res = scrape_products.delay(host=request.get_host(), new_file=new_file)
     res = {
         'success': True,
         # 'products': run()
