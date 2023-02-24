@@ -30,6 +30,5 @@ services:
       - shared_data:/data/shared_data
     depends_on:
       - redis
-      -
 volumes:
   shared_data:
