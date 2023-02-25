@@ -78,7 +78,7 @@ class MakinaBot:
             images = ['https:' + img.attrs['src'] for img in r.html.find('#kresim a > img')]
 
             res['Images'] = []
-            with Pool(max_workers=10) as pool:
+            with Pool(max_workers=20) as pool:
                 for img in pool.map(remove_image_watermark, images):
                     clean_image = f'http://{self.host}{img}'
                     res['Images'].append(clean_image)
@@ -125,7 +125,7 @@ class MakinaBot:
 
         logging.info('Getting products URLs...')
         total_products = []
-        with Pool(max_workers=10) as pool:
+        with Pool(max_workers=20) as pool:
             for products in pool.map(self.get_page_products_urls, total_pages[:]):
                 total_products.extend(products)
 
@@ -133,7 +133,7 @@ class MakinaBot:
 
         logging.info('Scraping products details...')
         products_results = []
-        with Pool(max_workers=10) as pool:
+        with Pool(max_workers=20) as pool:
             # total_products = total_products[:50]
             for i, product in enumerate(pool.map(self.scrape_product_details, total_products), 1):
                 logging.info(f'Progress: [{i}/{len(total_products)}]')
@@ -144,7 +144,7 @@ class MakinaBot:
                 # print(product)
 
                 # Export
-                if i % 50 == 0 or i == len(total_products):
+                if i % 25 == 0 or i == len(total_products):
                     print('Saving...')
                     # print(products_results)
                     append_products(products_results)
