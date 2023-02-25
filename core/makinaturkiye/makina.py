@@ -118,7 +118,7 @@ class MakinaBot:
         cats = self.get_categories_urls()
         total_pages = []
         with Pool(max_workers=10) as pool:
-            for pages in pool.map(self.get_category_pages_urls, cats[:1]):
+            for pages in pool.map(self.get_category_pages_urls, cats[:]):
                 total_pages.extend(pages)
                 # print(len(total_pages))
 
