@@ -16,7 +16,10 @@ def remove_image_watermark(image_url):
         image = image.resize((500, 375))
         name = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=35))
         # path = f'media/temp/images/{name}.jpg'
-        directory_path = os.path.join(settings.MEDIA_ROOT, 'images')
+        try:
+            directory_path = os.path.join(settings.MEDIA_ROOT, 'images')
+        except:
+            directory_path = os.path.join('images')
         if not os.path.exists(directory_path):
             os.makedirs(directory_path)
         file_path = os.path.join(directory_path, f'{name}.jpg')
