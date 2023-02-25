@@ -97,7 +97,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Istanbul'
 
 USE_I18N = True
 
@@ -119,6 +119,7 @@ STATICFILES_DIRS = (
 # Celery
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://localhost:6379/0")
+CELERY_TIMEZONE = 'Europe/Istanbul'
 # CELERY_BEAT_SCHEDULE = {
 #     'SchecduledTestTask': {
 #         'task': 'core.tasks.mytask',
