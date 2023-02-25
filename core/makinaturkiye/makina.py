@@ -78,7 +78,7 @@ class MakinaBot:
             images = ['https:' + img.attrs['src'] for img in r.html.find('#kresim a > img')]
 
             res['Images'] = []
-            with Pool(max_workers=15) as pool:
+            with Pool(max_workers=10) as pool:
                 for img in pool.map(remove_image_watermark, images):
                     clean_image = img and f'http://{self.host}{img}' or None
                     if clean_image:
@@ -117,28 +117,28 @@ class MakinaBot:
 
         cats = self.get_categories_urls()
         total_pages = []
-        with Pool(max_workers=15) as pool:
+        with Pool(max_workers=10) as pool:
             for pages in pool.map(self.get_category_pages_urls, cats[:1]):
                 total_pages.extend(pages)
                 # print(len(total_pages))
 
-        logging.info(f'Total Pages URLs: {len(total_pages)}')
+            logging.info(f'Total Pages URLs: {len(total_pages)}')
 
-        logging.info('Getting products URLs...')
-        total_products = []
-        with Pool(max_workers=15) as pool:
+            logging.info('Getting products URLs...')
+            total_products = []
+
             for products in pool.map(self.get_page_products_urls, total_pages[:]):
                 total_products.extend(products)
 
-        logging.info(f'Total products URLs: {len(total_products)}')
+            logging.info(f'Total products URLs: {len(total_products)}')
 
-        with open('products.txt', 'w', newline='') as f:
-            f.write('\n'.join(total_products))
+            with open('products.txt', 'w', newline='') as f:
+                f.write('\n'.join(total_products))
 
 
-        logging.info('Scraping products details...')
-        products_results = []
-        with Pool(max_workers=15) as pool:
+            logging.info('Scraping products details...')
+            products_results = []
+
             # total_products = total_products[:50]
             for i, product in enumerate(pool.map(self.scrape_product_details, total_products), 1):
                 logging.info(f'Progress: [{i}/{len(total_products)}]')
@@ -155,8 +155,8 @@ class MakinaBot:
                     append_products(products_results)
                     products_results = []
 
-        # print('Exporting...')
-        # export_products_to_XML(products_results)
+            # print('Exporting...')
+            # export_products_to_XML(products_results)
 
 
 
