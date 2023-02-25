@@ -3,7 +3,7 @@ version: '3.7'
 services:
   backend:
     image: backend
-    container_name: backend
+    container_name: derzanbot
     build:
       context: .
       dockerfile: Dockerfile
