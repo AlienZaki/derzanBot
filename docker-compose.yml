@@ -16,13 +16,11 @@ services:
     volumes:
       - static_files:/app/static
       - media_files:/app/media
+      - .:/app
     depends_on:
       - redis
       - celery
 
-  redis:
-    restart: unless-stopped
-    image: redis:alpine3.17
 
   celery:
     container_name: celery
@@ -34,9 +32,31 @@ services:
     volumes:
       - static_files:/app/static
       - media_files:/app/media
+      - .:/app
     depends_on:
       - redis
+
+
+  flower:
+    image: mher/flower
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - celery
+
+
+  redis:
+    image: redis:alpine3.17
+    restart: unless-stopped
+    volumes:
+      - .:/app
+
 
 volumes:
   static_files:
   media_files:
+
