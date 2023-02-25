@@ -3,7 +3,7 @@ version: '3.7'
 services:
   backend:
     image: backend
-    container_name: derzanbot
+    container_name: backend
     build:
       context: .
       dockerfile: Dockerfile
@@ -21,7 +21,6 @@ services:
       - celery
 
   redis:
-#    container_name: redis
     restart: unless-stopped
     image: redis:alpine3.17
 
