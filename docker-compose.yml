@@ -1,34 +1,43 @@
-version: '3.4'
+version: '3.7'
 
 services:
-  derzanbot:
-    image: derzanbot
+  backend:
+    image: backend
     container_name: backend
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: Dockerfile
     ports:
-      - 80:8000
+      - "80:8000"
+    restart: unless-stopped
     env_file:
       - .env
 
     volumes:
-      - shared_data:/media
+      - static_files:/app/static
+      - media_files:/app/media
     depends_on:
       - redis
       - celery
+
   redis:
     container_name: redis
+    restart: unless-stopped
     image: redis:alpine3.17
+
   celery:
     container_name: celery
     build: .
     command: celery -A derzanBot worker -l info
+    restart: unless-stopped
     env_file:
       - .env
     volumes:
-      - shared_data:/media
+      - static_files:/app/static
+      - media_files:/app/media
     depends_on:
       - redis
+
 volumes:
-  shared_data:
+  static_files:
+  media_files:
