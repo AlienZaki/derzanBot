@@ -1,8 +1,8 @@
 version: '3.7'
 
 services:
-  derzanbot:
-    image: derzanbot
+  backend:
+    image: backend
     container_name: derzanbot
     build:
       context: .
@@ -21,7 +21,7 @@ services:
       - celery
 
   redis:
-    container_name: redis
+#    container_name: redis
     restart: unless-stopped
     image: redis:alpine3.17
 
