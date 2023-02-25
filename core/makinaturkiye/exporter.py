@@ -56,6 +56,7 @@ def append_products(products_data, file_path=file_path):
         ET.SubElement(new_product, 'Origin').text = p.get('Origin', '')
         ET.SubElement(new_product, 'Delivery_status').text = p.get('Delivery status', '')
         ET.SubElement(new_product, 'Guarantee').text = p.get('Guarantee', '')
+        ET.SubElement(new_product, 'Currency').text = p.get('Currency', '')
         ET.SubElement(new_product, 'Price').text = p.get('Price', '')
         ET.SubElement(new_product, 'Price_Description').text = p['Price desc']
         ET.SubElement(new_product, 'Phone').text = p.get('Phone', '')
