@@ -61,8 +61,10 @@ class MakinaBot:
                     res[features_keys[key]] = value
 
             res['Category'] = 'industrial machinery///' + res['Category']
-
-            res['Price'] = r.html.find('.product-detail__price', first=True).text
+            price = r.html.find('.product-detail__price', first=True)
+            res['Price'] = price.text
+            currency = price.find('i', first=True)
+            res['Currency'] = currency and currency.attrs['class'][1].replace('fa-', '').replace('-', ' ') or ''
             price_desc = r.html.find('.product-detail__kdv', first=True)
             res['Price desc'] = price_desc and price_desc.text or ''
             phone = r.html.find('[href*=tel]', first=True)
