@@ -80,8 +80,9 @@ class MakinaBot:
             res['Images'] = []
             with Pool(max_workers=20) as pool:
                 for img in pool.map(remove_image_watermark, images):
-                    clean_image = f'http://{self.host}{img}'
-                    res['Images'].append(clean_image)
+                    clean_image = img and f'http://{self.host}{img}' or None
+                    if clean_image:
+                        res['Images'].append(clean_image)
 
 
             # print(res)
