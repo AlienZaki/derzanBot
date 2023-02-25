@@ -124,7 +124,7 @@ class MakinaBot:
         logging.info('Getting products URLs...')
         total_products = []
         with Pool(max_workers=10) as pool:
-            for products in pool.map(self.get_page_products_urls, total_pages[:1]):
+            for products in pool.map(self.get_page_products_urls, total_pages[:]):
                 total_products.extend(products)
 
         logging.info(f'Total products URLs: {len(total_products)}')
