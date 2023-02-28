@@ -4,7 +4,7 @@ from requests_html import HTMLSession
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 try:
-    from core.models import Product, ProductImage
+    from core.models import Product, ProductImage, Task
     from django.db import transaction
 except:
     import os, django
