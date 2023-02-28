@@ -1,20 +1,20 @@
-import csv
 import logging
 import traceback
 from requests_html import HTMLSession
-from concurrent.futures import ThreadPoolExecutor as Pool
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 try:
-    from .exporter import *
-    from .utils import *
+    from core.models import Product, ProductImage
 except:
-    from exporter import *
-    from utils import *
+    import os, django
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "derzanBot.settings")
+    django.setup()
+    from core.models import Product, ProductImage
 
 
+class MakinaScraper:
 
-class MakinaBot:
-
-    def __init__(self, host='localhost:8000'):
+    def __init__(self, host='localhost:8000', max_workers=10):
         self.session = HTMLSession()
         self.host = host
         logging.basicConfig(
@@ -23,144 +23,167 @@ class MakinaBot:
             format='%(asctime)s %(levelname)s %(message)s',
             # filename='logs.log'
         )
+        self.session.headers['user-agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
+        self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
-    def get_categories_urls(self):
-        r = self.session.get('https://www.makinaturkiye.com/urun-kategori-c-0')
-        category_urls = [c.attrs['href'] for c in r.html.find('div[id*=heading] > a[href*=http]')]
-        logging.info(f'Categories: {len(category_urls)}')
-        return category_urls
 
-    def scrape_product_details(self, url):
+    def get_product_details(self, product_url):
         try:
-            r = self.session.get(url)
-            res = {'Vendor': 'Makina', 'Language': 'tr'}
-            res['Vendor URL'] = url
-            res['Product name'] = r.html.find('h1.product-detail__title', first=True).text
-            # image_url = 'https:' + r.html.find('#myCarousel .item.active img', first=True).attrs['src']
-            # image = remove_image_watermark(image_url)
-            # res['main_image'] = image
-
+            r = self.session.get(product_url)
+            # print(r.status_code)
+            data = {'vendor': 'Makina', 'language': 'tr'}
             features = r.html.find('.urun-bilgi-tablo tr')
             features_keys = {
-                'İlan No': 'Product code',
-                'Kategori': 'Category',
-                'Marka': 'Brand',
-                'Ürün Tipi': 'Model type',
-                # 'Ürün Durumu': '',
-                'Menşei': 'Origin',
-                'Teslim Durumu': 'Delivery status',
-                # 'Konum': '',
-                'Kısa Detay': 'Guarantee',
-                # 'Satış Detayı': '',
+                'İlan No': 'code',
+                'Kategori': 'category',
+                'Marka': 'brand',
+                'Ürün Tipi': 'model_type',
+                'Ürün Durumu': 'condition',
+                'Menşei': 'origin',
+                'Teslim Durumu': 'delivery_status',
+                'Kısa Detay': 'guarantee',
             }
+            # auto getting features
             for f in features:
                 key = f.find('td[class*=tabletitle]', first=True).text.replace(':', '').strip()
                 value = f.find('td[class*=tablevalue]', first=True).text
-
                 if key and key in features_keys:
-                    res[features_keys[key]] = value
+                    data[features_keys[key]] = value
 
-            res['Category'] = 'industrial machinery///' + res['Category']
+            # data['Vendor URL'] = url
+            data['name'] = r.html.find('h1.product-detail__title', first=True).text
+            data['code'] = int(data['code'].replace('#', ''))
+            data['category'] = 'Industrial Machinery///' + data['category']
             price = r.html.find('.product-detail__price', first=True)
-            res['Price'] = price.text
             currency = price.find('i', first=True)
-            res['Currency'] = currency and currency.attrs['class'][1].replace('fa-', '').replace('-', ' ') or ''
+            data['currency'] = currency and currency.attrs['class'][1].replace('fa-', '').replace('-', ' ') or ''
+            data['price'] = currency and int(price.find('span')[-1].text.replace('.', '')) or 0
             price_desc = r.html.find('.product-detail__kdv', first=True)
-            res['Price desc'] = price_desc and price_desc.text or ''
-            phone = r.html.find('[href*=tel]', first=True)
-            res['Phone'] = phone and phone.text.replace(' ', '') or ''
+            data['price_description'] = price_desc and price_desc.text or ''
+            phone = r.html.find('div[class*=telefon] > a', first=True)
+            data['phone'] = phone and phone.text.replace(' ', '') or ''
             whatsapp = r.html.find('[href*="whatsapp.com"]', first=True)
             whatsapp = whatsapp and '+' + whatsapp.attrs['href'].split('phone=')[1].split('&')[0] or ''
-            res['Whatsapp'] = whatsapp
-
-            res['Description'] = r.html.find('#aciklama', first=True).html.replace('\n', '').strip().replace(
+            data['whatsapp'] = whatsapp
+            data['description'] = r.html.find('#aciklama', first=True).html.replace('\n', '').strip().replace(
                 '//s.makina', 'https://s.makina')
-            images = ['https:' + img.attrs['src'] for img in r.html.find('#kresim a > img')]
-
-            res['Images'] = []
-            with Pool(max_workers=10) as pool:
-                for img in pool.map(remove_image_watermark, images):
-                    clean_image = img and f'http://{self.host}{img}' or None
-                    if clean_image:
-                        res['Images'].append(clean_image)
-
+            images = ['http:' + img.attrs['src'].replace('s.makinaturkiye.com', self.host) for img in r.html.find('#kresim a > img')]
+            data['images'] = images
 
             # print(res)
-            return res
+            return data
         except Exception as e:
             traceback.print_exc()
+            print('=> ERROR:', product_url)
 
-    def get_category_pages_urls(self, category_url):
-        r = self.session.get(category_url)
-        last_page = r.html.find('#listing-container .listbottombar > div')
-        last_page = last_page and int(last_page[-1].text.split()[1]) or 1
-        # print(last_page)
-        page_urls = []
-        for i in range(1, last_page + 1):
-            page = f'{category_url}?page={i}'
-            # print(page)
-            page_urls.append(page)
-        logging.info(f'Pages found: {len(page_urls)}')
-        return page_urls
-
-    def get_page_products_urls(self, page_url):
+    def get_product_links(self, page_url):
         r = self.session.get(page_url)
         urls = r.html.find('#product-container .product-list-mt__inner > a[class*=mt__link]')
         products_urls = [u.attrs['href'] for u in urls]
         # print(len(products_urls))
         return products_urls
 
-    def run(self, new_file=False):
-        # file_path = 'Zaki.xml'
-        if new_file:
-            create_new_XML()
+    def get_category_products(self, category_url):
+        r = self.session.get(category_url)
+        last_page = r.html.find('#listing-container .listbottombar > div')
+        last_page = last_page and int(last_page[-1].text.split()[1]) or 1
 
-        cats = self.get_categories_urls()
-        total_pages = []
-        with Pool(max_workers=2) as pool:
-            for pages in pool.map(self.get_category_pages_urls, cats[:]):
-                total_pages.extend(pages)
-                # print(len(total_pages))
-
-            logging.info(f'Total Pages URLs: {len(total_pages)}')
-
-            logging.info('Getting products URLs...')
-            total_products = []
-
-            for products in pool.map(self.get_page_products_urls, total_pages[:]):
-                total_products.extend(products)
-
-            logging.info(f'Total products URLs: {len(total_products)}')
-
-            with open('products.txt', 'w', newline='') as f:
-                f.write('\n'.join(total_products))
+        # get category pagination
+        pagination = [f'{category_url}?page={i}' for i in range(1, last_page+1)]
+        logging.info(f'Pages found: {len(pagination)}')
 
 
-            logging.info('Scraping products details...')
-            products_results = []
+        # get product links from pagination
+        futures = []
+        product_links = []
+        for page in pagination:
+            futures.append(self.executor.submit(self.get_product_links, page))
+        for future in as_completed(futures):
+            product_links.extend(future.result())
+        logging.info(f'Product links found: {len(product_links)}')
 
-            # total_products = total_products[:50]
-            for i, product in enumerate(pool.map(self.scrape_product_details, total_products), 1):
-                logging.info(f'Progress: [{i}/{len(total_products)}]')
-                if product:
-                    products_results.append(product)
-                else:
-                    print('=> WARNING: FAILED TO SCRAPE PRODUCT')
-                # print(product)
+
+        # get products from pagination
+        # product_urls = []
+        # for page in pagination:
+        #     product_urls.extend(self.get_product_links(page))
+        # logging.info(f'Products found: {len(product_urls)}')
+
+        return product_links
+
+    def get_categories(self):
+        r = self.session.get('https://www.makinaturkiye.com/urun-kategori-c-0')
+        categories = [c.attrs['href'] for c in r.html.find('div[id*=heading] > a[href*=http]')]
+        logging.info(f'Categories: {len(categories)}')
+        return categories
+
+
+    # @profile
+    def run(self):
+        cats = self.get_categories()
+        for cat in cats[:1]:
+            category_products = self.get_category_products(cat)
+            futures = []
+            products_data = []
+            for product in category_products[:]:
+                futures.append(self.executor.submit(self.get_product_details, product))
+            for i, future in enumerate(as_completed(futures), 1):
+                data = future.result()
+                print(data)
+                products_data.append(data)
 
                 # Export
-                if i % 25 == 0 or i == len(total_products):
+                if i % 10 == 0 or i == len(futures):
                     print('Saving...')
                     # print(products_results)
-                    append_products(products_results)
-                    products_results = []
+                    # create a list of Product objects to insert
 
-            # print('Exporting...')
-            # export_products_to_XML(products_results)
+                    # create a list of Product and ProductImage objects to insert
+                    products = []
+                    images = []
 
+                    for data in products_data:
+                        # create the Product object
+                        # print('=>', data)
+                        product = Product(
+                            vendor=data['vendor'],
+                            language=data['language'],
+                            name=data['name'],
+                            code=data['code'],
+                            category=data['category'],
+                            brand=data.get('brand'),
+                            model_type=data.get('model_type'),
+                            condition=data.get('condition'),
+                            origin=data.get('origin'),
+                            delivery_status=data.get('delivery_status'),
+                            guarantee=data.get('guarantee'),
+                            currency=data.get('currency'),
+                            price=data.get('price'),
+                            price_description=data.get('price_description'),
+                            phone=data.get('phone'),
+                            whatsapp=data.get('whatsapp'),
+                            description=data.get('description'),
+                        )
+                        products.append(product)
+
+                    products_data = []
+                    # bulk insert the products into the database
+                    Product.objects.bulk_create(products, ignore_conflicts=True)
+
+                    # iterate over the saved products and create the ProductImage objects
+                    for product in products:
+                        for image_url in data.get('images', []):
+                            image = ProductImage(product_id=product.code, image=image_url)
+                            images.append(image)
+
+                    # bulk insert the images into the database
+                    ProductImage.objects.bulk_create(images, ignore_conflicts=True)
+                print('Saved!')
+
+            logging.info(f'Products data scraped: {len(products_data)}')
 
 
 
 if __name__ == '__main__':
-    bot = MakinaBot()
-    bot.run(new_file=True)
+    bot = MakinaScraper(max_workers=10)
+    bot.run()
