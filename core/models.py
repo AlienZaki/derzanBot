@@ -11,6 +11,7 @@ from django.db import models
 
 class Product(models.Model):
     code = models.CharField(max_length=50, unique=True, primary_key=True)
+    url = models.URLField()
     vendor = models.CharField(max_length=255)
     language = models.CharField(max_length=100)
     name = models.CharField(max_length=255)
@@ -35,3 +36,8 @@ class Product(models.Model):
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE)
     image = models.URLField()
+
+
+class Task(models.Model):
+    product_url = models.URLField(unique=True)
+    status = models.BooleanField(default=False)

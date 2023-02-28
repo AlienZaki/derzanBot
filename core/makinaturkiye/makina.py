@@ -5,11 +5,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 try:
     from core.models import Product, ProductImage
+    from django.db import transaction
 except:
     import os, django
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "derzanBot.settings")
     django.setup()
-    from core.models import Product, ProductImage
+    from core.models import Product, ProductImage, Task
+    from django.db import transaction
 
 
 class MakinaScraper:
@@ -31,7 +33,7 @@ class MakinaScraper:
         try:
             r = self.session.get(product_url)
             # print(r.status_code)
-            data = {'vendor': 'Makina', 'language': 'tr'}
+            data = {'url': product_url, 'vendor': 'Makina', 'language': 'tr'}
             features = r.html.find('.urun-bilgi-tablo tr')
             features_keys = {
                 'İlan No': 'code',
@@ -57,7 +59,10 @@ class MakinaScraper:
             price = r.html.find('.product-detail__price', first=True)
             currency = price.find('i', first=True)
             data['currency'] = currency and currency.attrs['class'][1].replace('fa-', '').replace('-', ' ') or ''
-            data['price'] = currency and int(price.find('span')[-1].text.replace('.', '')) or 0
+            try:
+                data['price'] = currency and int(price.find('span')[-1].text.replace('.', '').replace(',', '')) or 0
+            except:
+                data['price'] = 0
             price_desc = r.html.find('.product-detail__kdv', first=True)
             data['price_description'] = price_desc and price_desc.text or ''
             phone = r.html.find('div[class*=telefon] > a', first=True)
@@ -119,54 +124,69 @@ class MakinaScraper:
 
 
     # @profile
-    def run(self):
-        cats = self.get_categories()
-        for cat in cats[:1]:
-            category_products = self.get_category_products(cat)
-            futures = []
-            products_data = []
-            for product in category_products[:]:
-                futures.append(self.executor.submit(self.get_product_details, product))
-            for i, future in enumerate(as_completed(futures), 1):
-                data = future.result()
-                print(data)
-                products_data.append(data)
+    def run(self, force_refresh=False):
 
-                # Export
-                if i % 10 == 0 or i == len(futures):
-                    print('Saving...')
-                    # print(products_results)
-                    # create a list of Product objects to insert
+        product_links = []
 
-                    # create a list of Product and ProductImage objects to insert
-                    products = []
-                    images = []
+        if force_refresh:
+            # get products from categories
+            cats = self.get_categories()
+            for cat in cats[:]:
+                links = self.get_category_products(cat)
+                product_links.extend(links)
+                Task.objects.bulk_create([Task(product_url=i) for i in links], ignore_conflicts=True)
 
-                    for data in products_data:
-                        # create the Product object
-                        # print('=>', data)
-                        product = Product(
-                            vendor=data['vendor'],
-                            language=data['language'],
-                            name=data['name'],
-                            code=data['code'],
-                            category=data['category'],
-                            brand=data.get('brand'),
-                            model_type=data.get('model_type'),
-                            condition=data.get('condition'),
-                            origin=data.get('origin'),
-                            delivery_status=data.get('delivery_status'),
-                            guarantee=data.get('guarantee'),
-                            currency=data.get('currency'),
-                            price=data.get('price'),
-                            price_description=data.get('price_description'),
-                            phone=data.get('phone'),
-                            whatsapp=data.get('whatsapp'),
-                            description=data.get('description'),
-                        )
-                        products.append(product)
 
-                    products_data = []
+        # get products from db
+        product_links = Task.objects.all().filter(status=0)
+
+
+        futures = []
+        products_data = []
+        for product in product_links[:]:
+            futures.append(self.executor.submit(self.get_product_details, product.product_url))
+        for i, future in enumerate(as_completed(futures), 1):
+            data = future.result()
+            print(data)
+            products_data.append(data)
+
+            # Export
+            if i % 25 == 0 or i == len(futures):
+                print('Saving...')
+                # print(products_results)
+                # create a list of Product objects to insert
+
+                # create a list of Product and ProductImage objects to insert
+                products = []
+                images = []
+
+                for data in products_data:
+                    # create the Product object
+                    # print('=>', data)
+                    product = Product(
+                        vendor=data['vendor'],
+                        url=data['url'],
+                        language=data['language'],
+                        name=data['name'],
+                        code=data['code'],
+                        category=data['category'],
+                        brand=data.get('brand'),
+                        model_type=data.get('model_type'),
+                        condition=data.get('condition'),
+                        origin=data.get('origin'),
+                        delivery_status=data.get('delivery_status'),
+                        guarantee=data.get('guarantee'),
+                        currency=data.get('currency'),
+                        price=data.get('price'),
+                        price_description=data.get('price_description'),
+                        phone=data.get('phone'),
+                        whatsapp=data.get('whatsapp'),
+                        description=data.get('description'),
+                    )
+                    products.append(product)
+
+                products_data = []
+                with transaction.atomic():
                     # bulk insert the products into the database
                     Product.objects.bulk_create(products, ignore_conflicts=True)
 
@@ -175,15 +195,19 @@ class MakinaScraper:
                         for image_url in data.get('images', []):
                             image = ProductImage(product_id=product.code, image=image_url)
                             images.append(image)
+                        task = Task.objects.get(product_url=product.url)
+                        task.status = 1
+                        task.save()
 
                     # bulk insert the images into the database
                     ProductImage.objects.bulk_create(images, ignore_conflicts=True)
-                print('Saved!')
 
-            logging.info(f'Products data scraped: {len(products_data)}')
+                    print('Saved!')
+
+        # logging.info(f'Products data scraped: {len(products_data)}')
 
 
 
 if __name__ == '__main__':
     bot = MakinaScraper(max_workers=10)
-    bot.run()
+    bot.run(force_refresh=False)
