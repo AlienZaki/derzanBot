@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Run database migrations before starting the server
+python manage.py collectstatic --noinput
 python manage.py makemigrations
 python manage.py migrate
 
