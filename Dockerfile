@@ -22,6 +22,7 @@ COPY . /app
 
 # Run database migrations before starting the server
 RUN chmod +x entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
 
 
