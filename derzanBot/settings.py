@@ -5,7 +5,7 @@ from pathlib import Path
 
 env = environ.Env(
     # set casting, default value
-    DEBUG=(bool, True)
+    DEBUG=(bool, False)
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,6 +24,7 @@ SECRET_KEY = 'django-insecure-0nik2i95&h5!%32!+gh0q@krip8-+0%#+w6p3dx@f%cz0(i5^^
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
+print('DEBUG:', DEBUG)
 
 ALLOWED_HOSTS = ['*']
 
