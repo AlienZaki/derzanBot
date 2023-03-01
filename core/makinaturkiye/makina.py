@@ -141,10 +141,10 @@ class MakinaScraper:
         # get products from db
         product_links = Task.objects.all().filter(status=0)
 
+        futures = []
         for product in product_links[:]:
             futures.append(self.executor.submit(self.get_product_details, product.product_url))
 
-        futures = []
         products_data = []
         for i, future in enumerate(as_completed(futures), 1):
             print('OK')
