@@ -148,7 +148,8 @@ class MakinaScraper:
             futures.append(self.executor.submit(self.get_product_details, product.product_url))
         for i, future in enumerate(as_completed(futures), 1):
             data = future.result()
-            print(data)
+            print('OK')
+            # print(data)
             products_data.append(data)
 
             # Export
@@ -210,7 +211,7 @@ class MakinaScraper:
 
 
 if __name__ == '__main__':
-    bot = MakinaScraper(max_workers=10)
-    # bot.run(force_refresh=False)
-    res = bot.get_product_details('https://www.makinaturkiye.com/double-motor-strec-film-sarma-aktarma-makinesi-p-179848')
-    print(res)
+    bot = MakinaScraper(host='165.22.19.183', max_workers=10)
+    bot.run(force_refresh=True)
+    # res = bot.get_product_details('https://www.makinaturkiye.com/double-motor-strec-film-sarma-aktarma-makinesi-p-179848')
+    # print(res)
