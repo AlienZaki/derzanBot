@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # Run database migrations before starting the server
 python manage.py collectstatic --noinput
