@@ -26,15 +26,9 @@ COPY . /app
 #ENTRYPOINT ["/backend-entrypoint.sh"]
 
 
-# Run database migrations before starting the server
-CMD ["python manage.py collectstatic --noinput"]
-CMD ["python manage.py makemigrations"]
-CMD ["python manage.py migrate"]
-
-# Create alien superuser
-CMD ["python manage.py init_admin"]
-
 # Start the server using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "derzanBot.wsgi"]
+#CMD ["gunicorn", "--bind", "0.0.0.0:8000", "derzanBot.wsgi"]
 
+COPY start.sh /
+CMD ["/bin/bash", "/start.sh"]
 
