@@ -5,7 +5,9 @@ from .tasks import scrape_products, mytask
 from django.http import HttpResponseRedirect
 from PIL import Image
 import requests
-
+from django.core import serializers
+from .models import Product
+from django.template import loader
 
 
 session = requests.session()
@@ -30,7 +32,13 @@ def makina(request):
     return JsonResponse(res, safe=False)
 
 
-
+def export_products_to_xml(request):
+    products = Product.objects.all()[:50]
+    context = {'products': products}
+    xml_string = loader.render_to_string('products.xml', context)
+    response = HttpResponse(xml_string, content_type='application/xml')
+    response['Content-Disposition'] = 'attachment; filename="products.xml"'
+    return response
 
 def makina_watermark_remover(request, pk, image):
     # replace image size in the URL with 400x300

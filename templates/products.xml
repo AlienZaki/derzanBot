@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root>
+    <Products>
+        {% for product in products %}
+        <Product>
+            <Vendor>{{ product.vendor }}</Vendor>
+            <Language>{{ product.language }}</Language>
+            <ProductName>{{ product.name }}</ProductName>
+			<ProductCode>{{ product.code }}</ProductCode>
+			<Category>{{ product.category }}</Category>
+			<Brand>{{ product.brand }}</Brand>
+			<ModelType>{{ product.model_type }}</ModelType>
+            <Condition>{{ product.condition }}</Condition>
+			<Origin>{{ product.origin }}</Origin>
+			<Delivery_status>{{ product.delivery_status }}</Delivery_status>
+			<Guarantee>{{ product.guarantee }}</Guarantee>
+            <Currency>{{ product.currency }}</Currency>
+			<Price>{{ product.price }}</Price>
+			<Price_Description>{{ product.price_description }}</Price_Description>
+			<Phone>{{ product.phone }}</Phone>
+			<Whatsapp>{{ product.whatsapp }}</Whatsapp>
+			<Description>{{ product.description|safe }}</Description>
+            <source>{{ product.url }}</source>
+            <Images>{% for img in product.images.all %}
+                <image{{ forloop.counter }}>{{ img.image }}</image>{% endfor %}
+            </Images>
+        </Product>{% endfor %}
+    </Products>
+</Root>

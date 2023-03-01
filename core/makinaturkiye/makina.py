@@ -155,15 +155,12 @@ class MakinaScraper:
             # Export
             if i % 25 == 0 or i == len(futures):
                 print('Saving...')
-                # print(products_results)
-                # create a list of Product objects to insert
-
                 # create a list of Product and ProductImage objects to insert
-                products = []
-                images = []
+                product_list = []
+                product_image_list = []
 
                 for data in products_data:
-                    # create the Product object
+                    # create the Product objects
                     # print('=>', data)
                     product = Product(
                         vendor=data['vendor'],
@@ -185,24 +182,21 @@ class MakinaScraper:
                         whatsapp=data.get('whatsapp'),
                         description=data.get('description'),
                     )
-                    products.append(product)
+                    product_list.append(product)
 
-                products_data = []
+                    # create the ProductImage objects
+                    for image_url in data['images']:
+                        product_image = ProductImage(product=product, image=image_url)
+                        product_image_list.append(product_image)
+
+                # Store data
                 with transaction.atomic():
-                    # bulk insert the products into the database
-                    Product.objects.bulk_create(products, ignore_conflicts=True)
+                    # bulk create the objects
+                    Product.objects.bulk_create(product_list, ignore_conflicts=True)
+                    ProductImage.objects.bulk_create(product_image_list, ignore_conflicts=True)
 
-                    # iterate over the saved products and create the ProductImage objects
-                    for product in products:
-                        for image_url in data.get('images', []):
-                            image = ProductImage(product_id=product.code, image=image_url)
-                            images.append(image)
-                        task = Task.objects.get(product_url=product.url)
-                        task.status = 1
-                        task.save()
-
-                    # bulk insert the images into the database
-                    ProductImage.objects.bulk_create(images, ignore_conflicts=True)
+                    # update the Task status to 1 where the Task.product_url matches the product url
+                    Task.objects.filter(product_url__in=[p.url for p in product_list]).update(status=1)
 
                     print('Saved!')
 
@@ -213,5 +207,5 @@ class MakinaScraper:
 if __name__ == '__main__':
     bot = MakinaScraper(host='165.22.19.183', max_workers=1)
     bot.run(force_refresh=False)
-    # res = bot.get_product_details('https://www.makinaturkiye.com/double-motor-strec-film-sarma-aktarma-makinesi-p-179848')
+    # res = bot.get_product_details('https://www.makinaturkiye.com/netmak-fr-2000-s-freze-makinasi-p-213063')
     # print(res)

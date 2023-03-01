@@ -77,7 +77,8 @@ WSGI_APPLICATION = 'derzanBot.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-USE_POSTGRES = env('USE_POSTGRES') or True
+USE_POSTGRES = env('USE_POSTGRES') or False
+# USE_POSTGRES = False
 
 print('=> USE_POSTGRES:', USE_POSTGRES)
 if USE_POSTGRES:
