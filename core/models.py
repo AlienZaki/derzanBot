@@ -32,12 +32,21 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return f'{self.code} - {self.name}'
+
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE)
     image = models.URLField()
 
+    def __str__(self):
+        return f'{self.product.code} - {self.image}'
+
 
 class Task(models.Model):
     product_url = models.URLField(unique=True)
     status = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.product_url} - {self.status}'
