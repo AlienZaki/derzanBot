@@ -59,10 +59,11 @@ class MakinaScraper:
             price = r.html.find('.product-detail__price', first=True)
             currency = price.find('i', first=True)
             data['currency'] = currency and currency.attrs['class'][1].replace('fa-', '').replace('-', ' ') or ''
-            try:
-                data['price'] = currency and int(price.find('span')[-1].text.replace('.', '').replace(',', '')) or 0
-            except:
-                data['price'] = 0
+
+            price = currency and price.find('span')[-1].text.replace('.', '').replace(',', '') or 0
+            price = price.split('-')[-1] if price and '-' in price else price
+            data['price'] = int(price)
+
             price_desc = r.html.find('.product-detail__kdv', first=True)
             data['price_description'] = price_desc and price_desc.text or ''
             phone = r.html.find('div[class*=telefon] > a', first=True)
@@ -210,4 +211,6 @@ class MakinaScraper:
 
 if __name__ == '__main__':
     bot = MakinaScraper(max_workers=10)
-    bot.run(force_refresh=False)
+    # bot.run(force_refresh=False)
+    res = bot.get_product_details('https://www.makinaturkiye.com/double-motor-strec-film-sarma-aktarma-makinesi-p-179848')
+    print(res)
