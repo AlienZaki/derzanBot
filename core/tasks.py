@@ -13,9 +13,9 @@ def mytask():
 
 
 @shared_task()
-def scrape_products(host, new_file):
+def scrape_products(host, force_refresh):
     print('Task Started...')
-    MakinaScraper(host).run()
+    MakinaScraper(host).run(force_refresh)
     print('Task Finished.')
     # return products
 
