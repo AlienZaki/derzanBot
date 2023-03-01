@@ -20,9 +20,9 @@ COPY . /app
 #RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
 #USER appuser
 
-ADD entrypoint.sh /entrypoint.sh
-RUN chmod a+x /entrypoint.sh
+ADD backend-entrypoint.sh /backend-entrypoint.sh
+RUN chmod a+x /backend-entrypoint.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/backend-entrypoint.sh"]
 
 
