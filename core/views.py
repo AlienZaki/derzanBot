@@ -11,9 +11,9 @@ import requests
 session = requests.session()
 
 
-def test(request, force_refresh):
+def test(request, force_refresh, max_workers):
     # scrape_products.delay()
-    res = scrape_products.delay(host=request.get_host(), force_refresh=force_refresh)
+    res = scrape_products.delay(host=request.get_host(), force_refresh=force_refresh, max_workers=max_workers)
     res = {
         'success': True,
         # 'products': run()

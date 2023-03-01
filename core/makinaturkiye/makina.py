@@ -211,7 +211,7 @@ class MakinaScraper:
 
 
 if __name__ == '__main__':
-    bot = MakinaScraper(host='165.22.19.183', max_workers=10)
-    bot.run(force_refresh=True)
+    bot = MakinaScraper(host='165.22.19.183', max_workers=1)
+    bot.run(force_refresh=False)
     # res = bot.get_product_details('https://www.makinaturkiye.com/double-motor-strec-film-sarma-aktarma-makinesi-p-179848')
     # print(res)
