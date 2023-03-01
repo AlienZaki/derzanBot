@@ -10,3 +10,7 @@ python manage.py init_admin
 
 # Start the server using Gunicorn
 exec gunicorn --bind 0.0.0.0:8000 derzanBot.wsgi
+
+
+# Start the application server
+exec "$@"

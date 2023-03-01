@@ -23,7 +23,7 @@ services:
 
 
   celery:
-    container_name: celery
+#    container_name: celery
     build: .
     command: celery -A derzanBot worker -l info
     restart: always

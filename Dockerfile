@@ -20,9 +20,21 @@ COPY . /app
 #RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
 #USER appuser
 
-ADD backend-entrypoint.sh /backend-entrypoint.sh
-RUN chmod a+x /backend-entrypoint.sh
+#ADD backend-entrypoint.sh /backend-entrypoint.sh
+#RUN chmod a+x /backend-entrypoint.sh
+#
+#ENTRYPOINT ["/backend-entrypoint.sh"]
 
-ENTRYPOINT ["/backend-entrypoint.sh"]
+
+# Run database migrations before starting the server
+CMD ["python manage.py collectstatic --noinput"]
+CMD ["python manage.py makemigrations"]
+CMD ["python manage.py migrate"]
+
+# Create alien superuser
+CMD ["python manage.py init_admin"]
+
+# Start the server using Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "derzanBot.wsgi"]
 
 
