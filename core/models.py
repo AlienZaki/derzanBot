@@ -38,7 +38,7 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name='images', db_column='product_code', on_delete=models.CASCADE)
-    image = models.URLField()
+    image = models.URLField(unique=True)
 
     def __str__(self):
         return f'{self.product.code} - {self.image}'

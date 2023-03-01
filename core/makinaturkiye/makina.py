@@ -141,25 +141,26 @@ class MakinaScraper:
         # get products from db
         product_links = Task.objects.all().filter(status=0)
 
+        for product in product_links[:]:
+            futures.append(self.executor.submit(self.get_product_details, product.product_url))
 
         futures = []
         products_data = []
-        for product in product_links[:]:
-            futures.append(self.executor.submit(self.get_product_details, product.product_url))
         for i, future in enumerate(as_completed(futures), 1):
-            data = future.result()
             print('OK')
-            # print(data)
-            products_data.append(data)
+            product_details = future.result()
+            products_data.append(product_details)
 
             # Export
             if i % 25 == 0 or i == len(futures):
+                temp_products_data = products_data
+                products_data = []
                 print('Saving...')
                 # create a list of Product and ProductImage objects to insert
                 product_list = []
                 product_image_list = []
 
-                for data in products_data:
+                for data in temp_products_data:
                     # create the Product objects
                     # print('=>', data)
                     product = Product(
@@ -197,10 +198,7 @@ class MakinaScraper:
 
                     # update the Task status to 1 where the Task.product_url matches the product url
                     Task.objects.filter(product_url__in=[p.url for p in product_list]).update(status=1)
-
                     print('Saved!')
-
-        # logging.info(f'Products data scraped: {len(products_data)}')
 
 
 
