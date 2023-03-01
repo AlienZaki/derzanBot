@@ -20,10 +20,6 @@ COPY . /app
 #RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
 #USER appuser
 
-# Run database migrations before starting the server
-#RUN chmod +x ./entrypoint.sh
-#ENTRYPOINT ["./entrypoint.sh"]
-
 ADD entrypoint.sh /entrypoint.sh
 RUN chmod a+x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
