@@ -32,6 +32,9 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def main_category(self):
+        return self.category.split('///')[-1]
+
     def __str__(self):
         return f'{self.code} - {self.name}'
 

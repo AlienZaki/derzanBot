@@ -34,7 +34,7 @@ def makina(request):
 
 def export_products_to_xml(request):
     limit = request.GET.get('limit', None)
-    currency = request.GET.get('currency', None)
+    currency = request.GET.get('currency', '')
     # get all products
     products = Product.objects.all()
     # apply currency filter
