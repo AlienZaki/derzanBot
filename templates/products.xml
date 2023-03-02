@@ -22,7 +22,7 @@
 			<Description>{{ product.description|safe }}</Description>
             <source>{{ product.url }}</source>
             <Images>{% for img in product.images.all %}
-                <image{{ forloop.counter }}>{{ img.image }}</image>{% endfor %}
+                <image{{ forloop.counter }}>{{ img.image }}</image{{ forloop.counter }}>{% endfor %}
             </Images>
         </Product>{% endfor %}
     </Products>

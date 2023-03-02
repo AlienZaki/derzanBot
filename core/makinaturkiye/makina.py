@@ -1,8 +1,11 @@
 import logging
-import traceback
+import traceback, time
 from requests_html import HTMLSession
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from fake_useragent import UserAgent
+
+ua = UserAgent()
 
 try:
     from core.models import Product, ProductImage, Task
@@ -28,12 +31,13 @@ class MakinaScraper:
             format='%(asctime)s %(levelname)s %(message)s',
             # filename='logs.log'
         )
-        self.session.headers['user-agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
+        self.session.headers['user-agent'] = ua.google
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
 
     def get_product_details(self, product_url):
         try:
+            time.sleep(2)
             r = self.session.get(product_url, timeout=3)
             # print(r.status_code)
             data = {'url': product_url, 'vendor': 'Makina', 'language': 'tr'}
@@ -83,6 +87,9 @@ class MakinaScraper:
             return data
         except requests.exceptions.ReadTimeout:
             print('=> Timeout')
+            self.session = HTMLSession()
+            self.session.headers['user-agent'] = ua.google
+            # print(self.session.headers['user-agent'])
             return self.get_product_details(product_url)
         except Exception as e:
             traceback.print_exc()
@@ -145,7 +152,7 @@ class MakinaScraper:
 
 
         # get products from db
-        product_links = Task.objects.all().filter(status=0)
+        product_links = Task.objects.all().filter(status=0).order_by('product_url')
 
         chunk_size = 1000
         paginator = Paginator(product_links, per_page=chunk_size)
@@ -165,8 +172,9 @@ class MakinaScraper:
 
             for i, future in enumerate(as_completed(futures), 1):
                 product_details = future.result()
-                products_data.append(product_details)
-                print('OK')
+                if product_details:
+                    products_data.append(product_details)
+                    print('OK')
 
                 # Export
                 if i % 25 == 0 or i == len(futures): #len(page)
