@@ -33,7 +33,9 @@ def makina(request):
 
 
 def export_products_to_xml(request):
-    products = Product.objects.all()[:1000]
+    limit = request.GET.get('limit', None)
+    products = Product.objects.all()
+    products = products[:int(limit)] if limit else products
     context = {'products': products}
     xml_string = loader.render_to_string('products.xml', context)
     response = HttpResponse(xml_string, content_type='application/xml')

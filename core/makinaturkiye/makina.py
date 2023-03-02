@@ -62,10 +62,25 @@ class MakinaScraper:
             # data['Vendor URL'] = url
             data['name'] = r.html.find('h1.product-detail__title', first=True).text
             data['code'] = int(data['code'].replace('#', ''))
-            data['category'] = 'Industrial Machinery///' + data['category']
+            # Categories handler
+            breadcrumb_items = r.html.find('ol.breadcrumb > li')[1:]
+            categories = ['Endüstriyel makine']
+            for item in breadcrumb_items:
+                category = item.text.strip()
+                categories.append(category)
+                if category == data['category']:
+                    break
+            data['category'] = '///'.join(categories)
+
             price = r.html.find('.product-detail__price', first=True)
             currency = price.find('i', first=True)
-            data['currency'] = currency and currency.attrs['class'][1].replace('fa-', '').replace('-', ' ') or ''
+            currency = currency and currency.attrs['class'][1].replace('fa-', '').replace('-', ' ') or ''
+            currency_codes = {
+                'turkish lira': 'TL',
+                'usd': 'USD',
+                'euro': 'EURO'
+            }
+            data['currency'] = currency and currency_codes[currency.lower()] or ''
 
             price = currency and price.find('span')[-1].text.replace('.', '').replace(',', '') or 0
             price = price.split('-')[-1] if price and '-' in price else price
@@ -229,6 +244,6 @@ class MakinaScraper:
 
 if __name__ == '__main__':
     bot = MakinaScraper(host='165.22.19.183', max_workers=1)
-    bot.run(force_refresh=False)
-    # res = bot.get_product_details('https://www.makinaturkiye.com/netmak-fr-2000-s-freze-makinasi-p-213063')
-    # print(res)
+    # bot.run(force_refresh=False)
+    res = bot.get_product_details('https://www.makinaturkiye.com/netmak-fr-2000-s-freze-makinasi-p-213063')
+    print(res)
