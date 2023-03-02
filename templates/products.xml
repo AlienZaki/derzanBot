@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <Root>
     <Products>
         {% for product in products %}
@@ -19,10 +18,10 @@
 			<Price_Description>{{ product.price_description }}</Price_Description>
 			<Phone>{{ product.phone }}</Phone>
 			<Whatsapp>{{ product.whatsapp }}</Whatsapp>
-			<Description>{{ product.description|safe }}</Description>
-            <source>{{ product.url }}</source>
+			<Description><![CDATA[{{ product.description|safe }}]]></Description>
+            <Source>{{ product.url }}</Source>
             <Images>{% for img in product.images.all %}
-                <image{{ forloop.counter }}>{{ img.image }}</image{{ forloop.counter }}>{% endfor %}
+                <Image{{ forloop.counter }}>{{ img.image }}</Image{{ forloop.counter }}>{% endfor %}
             </Images>
         </Product>{% endfor %}
     </Products>

@@ -37,7 +37,7 @@ class MakinaScraper:
 
     def get_product_details(self, product_url):
         try:
-            time.sleep(2)
+            time.sleep(1)
             r = self.session.get(product_url, timeout=3)
             # print(r.status_code)
             data = {'url': product_url, 'vendor': 'Makina', 'language': 'tr'}
