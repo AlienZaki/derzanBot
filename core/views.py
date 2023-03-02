@@ -33,7 +33,7 @@ def makina(request):
 
 
 def export_products_to_xml(request):
-    products = Product.objects.all()[:50]
+    products = Product.objects.all()[:1000]
     context = {'products': products}
     xml_string = loader.render_to_string('products.xml', context)
     response = HttpResponse(xml_string, content_type='application/xml')
