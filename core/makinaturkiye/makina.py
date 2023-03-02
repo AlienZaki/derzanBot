@@ -1,6 +1,7 @@
 import logging
 import traceback
 from requests_html import HTMLSession
+import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 try:
@@ -33,7 +34,7 @@ class MakinaScraper:
 
     def get_product_details(self, product_url):
         try:
-            r = self.session.get(product_url)
+            r = self.session.get(product_url, timeout=3)
             # print(r.status_code)
             data = {'url': product_url, 'vendor': 'Makina', 'language': 'tr'}
             features = r.html.find('.urun-bilgi-tablo tr')
@@ -80,6 +81,9 @@ class MakinaScraper:
 
             # print(res)
             return data
+        except requests.exceptions.ReadTimeout:
+            print('=> Timeout')
+            return self.get_product_details(product_url)
         except Exception as e:
             traceback.print_exc()
             print('=> ERROR:', product_url)
@@ -150,19 +154,22 @@ class MakinaScraper:
             print('=> PAGE:', page_num)
             page = paginator.page(page_num)
 
-            futures = []
-            for product in page[:]:
-                futures.append(self.executor.submit(self.get_product_details, product.product_url))
+            # futures = []
+            # for product in page[:]:
+            #     futures.append(self.executor.submit(self.get_product_details, product.product_url))
 
 
             products_data = []
-            for i, future in enumerate(as_completed(futures), 1):
-                print('OK')
-                product_details = future.result()
+            for i, product in enumerate(page, 1):
+                product_details = self.get_product_details(product.product_url)
+
+            # for i, future in enumerate(as_completed(futures), 1):
+            #     product_details = future.result()
                 products_data.append(product_details)
+                print('OK')
 
                 # Export
-                if i % 25 == 0 or i == len(futures):
+                if i % 25 == 0 or i == len(page):#len(futures):
                     temp_products_data = products_data
                     products_data = []
                     print('Saving...')
