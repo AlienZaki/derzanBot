@@ -7,17 +7,17 @@
             <ProductName>{{ product.name }}</ProductName>
 			<ProductCode>{{ product.code }}</ProductCode>
 			<Category>{{ product.category }}</Category>
-			<Brand>{{ product.brand }}</Brand>
-			<ModelType>{{ product.model_type }}</ModelType>
-            <Condition>{{ product.condition }}</Condition>
-			<Origin>{{ product.origin }}</Origin>
-			<Delivery_status>{{ product.delivery_status }}</Delivery_status>
-			<Guarantee>{{ product.guarantee }}</Guarantee>
-            <Currency>{{ product.currency }}</Currency>
+			<Brand>{{ product.brand|default:'' }}</Brand>
+			<ModelType>{{ product.model_type|default:'' }}</ModelType>
+            <Condition>{{ product.condition|default:'' }}</Condition>
+			<Origin>{{ product.origin|default:'' }}</Origin>
+			<Delivery_status>{{ product.delivery_status|default:'' }}</Delivery_status>
+			<Guarantee>{{ product.guarantee|default:'' }}</Guarantee>
+            <Currency>{{ product.currency|default:'' }}</Currency>
 			<Price>{{ product.price }}</Price>
-			<Price_Description>{{ product.price_description }}</Price_Description>
-			<Phone>{{ product.phone }}</Phone>
-			<Whatsapp>{{ product.whatsapp }}</Whatsapp>
+			<Price_Description>{{ product.price_description|default:'' }}</Price_Description>
+			<Phone>{{ product.phone|default:'' }}</Phone>
+			<Whatsapp>{{ product.whatsapp|default:'' }}</Whatsapp>
 			<Description><![CDATA[{{ product.description|safe }}]]></Description>
             <Source>{{ product.url }}</Source>
             <Images>{% for img in product.images.all %}
