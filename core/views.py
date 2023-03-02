@@ -34,12 +34,21 @@ def makina(request):
 
 def export_products_to_xml(request):
     limit = request.GET.get('limit', None)
+    currency = request.GET.get('currency', None)
+    # get all products
     products = Product.objects.all()
-    products = products[:int(limit)] if limit else products
+    # apply currency filter
+    if currency.upper() == 'NONE':
+        products = products.filter(currency='')
+    else:
+        products = currency and products.filter(currency=currency.upper()) or products
+    # apply limit filter
+    products = limit and products[:int(limit)] or products
+
     context = {'products': products}
     xml_string = loader.render_to_string('products.xml', context)
     response = HttpResponse(xml_string, content_type='application/xml')
-    response['Content-Disposition'] = 'attachment; filename="products.xml"'
+    response['Content-Disposition'] = f'attachment; filename="makina-products.xml"'
     return response
 
 def makina_watermark_remover(request, pk, image):

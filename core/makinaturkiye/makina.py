@@ -78,7 +78,7 @@ class MakinaScraper:
             currency_codes = {
                 'turkish lira': 'TL',
                 'usd': 'USD',
-                'euro': 'EURO'
+                'eur': 'EUR'
             }
             data['currency'] = currency and currency_codes[currency.lower()] or ''
 
@@ -244,6 +244,6 @@ class MakinaScraper:
 
 if __name__ == '__main__':
     bot = MakinaScraper(host='165.22.19.183', max_workers=1)
-    # bot.run(force_refresh=False)
-    res = bot.get_product_details('https://www.makinaturkiye.com/netmak-fr-2000-s-freze-makinasi-p-213063')
-    print(res)
+    bot.run(force_refresh=False)
+    # res = bot.get_product_details('https://www.makinaturkiye.com/netmak-fr-2000-s-freze-makinasi-p-213063')
+    # print(res)
