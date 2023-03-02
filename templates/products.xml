@@ -6,7 +6,7 @@
             <Language>{{ product.language }}</Language>
             <ProductName>{{ product.name }}</ProductName>
 			<ProductCode>{{ product.code }}</ProductCode>
-            <MainCategory>{{ product.main_category }}</MainCategory>
+            <MainCategory>Endüstriyel Makine</MainCategory>
 			<Category>{{ product.category }}</Category>
 			<Brand>{{ product.brand|default:'' }}</Brand>
 			<ModelType>{{ product.model_type|default:'' }}</ModelType>
