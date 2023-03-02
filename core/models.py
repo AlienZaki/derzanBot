@@ -15,7 +15,7 @@ class Product(models.Model):
     vendor = models.CharField(max_length=255)
     language = models.CharField(max_length=100)
     name = models.CharField(max_length=255)
-    category = models.CharField(max_length=255)
+    category = models.CharField(max_length=500)
     brand = models.CharField(max_length=255, null=True, blank=True)
     model_type = models.CharField(max_length=255, null=True, blank=True)
     condition = models.CharField(max_length=255, null=True, blank=True)
