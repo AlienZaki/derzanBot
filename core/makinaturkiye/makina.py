@@ -6,12 +6,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 try:
     from core.models import Product, ProductImage, Task
     from django.db import transaction
+    from django.core.paginator import Paginator
 except:
     import os, django
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "derzanBot.settings")
     django.setup()
     from core.models import Product, ProductImage, Task
     from django.db import transaction
+    from django.core.paginator import Paginator
 
 
 class MakinaScraper:
@@ -141,64 +143,72 @@ class MakinaScraper:
         # get products from db
         product_links = Task.objects.all().filter(status=0)
 
-        futures = []
-        for product in product_links[:]:
-            futures.append(self.executor.submit(self.get_product_details, product.product_url))
+        chunk_size = 1000
+        paginator = Paginator(product_links, per_page=chunk_size)
 
-        products_data = []
-        for i, future in enumerate(as_completed(futures), 1):
-            print('OK')
-            product_details = future.result()
-            products_data.append(product_details)
+        for page_num in range(1, paginator.num_pages + 1):
+            print('=> PAGE:', page_num)
+            page = paginator.page(page_num)
 
-            # Export
-            if i % 25 == 0 or i == len(futures):
-                temp_products_data = products_data
-                products_data = []
-                print('Saving...')
-                # create a list of Product and ProductImage objects to insert
-                product_list = []
-                product_image_list = []
+            futures = []
+            for product in page[:]:
+                futures.append(self.executor.submit(self.get_product_details, product.product_url))
 
-                for data in temp_products_data:
-                    # create the Product objects
-                    # print('=>', data)
-                    product = Product(
-                        vendor=data['vendor'],
-                        url=data['url'],
-                        language=data['language'],
-                        name=data['name'],
-                        code=data['code'],
-                        category=data['category'],
-                        brand=data.get('brand'),
-                        model_type=data.get('model_type'),
-                        condition=data.get('condition'),
-                        origin=data.get('origin'),
-                        delivery_status=data.get('delivery_status'),
-                        guarantee=data.get('guarantee'),
-                        currency=data.get('currency'),
-                        price=data.get('price'),
-                        price_description=data.get('price_description'),
-                        phone=data.get('phone'),
-                        whatsapp=data.get('whatsapp'),
-                        description=data.get('description'),
-                    )
-                    product_list.append(product)
 
-                    # create the ProductImage objects
-                    for image_url in data['images']:
-                        product_image = ProductImage(product=product, image=image_url)
-                        product_image_list.append(product_image)
+            products_data = []
+            for i, future in enumerate(as_completed(futures), 1):
+                print('OK')
+                product_details = future.result()
+                products_data.append(product_details)
 
-                # Store data
-                with transaction.atomic():
-                    # bulk create the objects
-                    Product.objects.bulk_create(product_list, ignore_conflicts=True)
-                    ProductImage.objects.bulk_create(product_image_list, ignore_conflicts=True)
+                # Export
+                if i % 25 == 0 or i == len(futures):
+                    temp_products_data = products_data
+                    products_data = []
+                    print('Saving...')
+                    # create a list of Product and ProductImage objects to insert
+                    product_list = []
+                    product_image_list = []
 
-                    # update the Task status to 1 where the Task.product_url matches the product url
-                    Task.objects.filter(product_url__in=[p.url for p in product_list]).update(status=1)
-                    print('Saved!')
+                    for data in temp_products_data:
+                        # create the Product objects
+                        # print('=>', data)
+                        product = Product(
+                            vendor=data['vendor'],
+                            url=data['url'],
+                            language=data['language'],
+                            name=data['name'],
+                            code=data['code'],
+                            category=data['category'],
+                            brand=data.get('brand'),
+                            model_type=data.get('model_type'),
+                            condition=data.get('condition'),
+                            origin=data.get('origin'),
+                            delivery_status=data.get('delivery_status'),
+                            guarantee=data.get('guarantee'),
+                            currency=data.get('currency'),
+                            price=data.get('price'),
+                            price_description=data.get('price_description'),
+                            phone=data.get('phone'),
+                            whatsapp=data.get('whatsapp'),
+                            description=data.get('description'),
+                        )
+                        product_list.append(product)
+
+                        # create the ProductImage objects
+                        for image_url in data['images']:
+                            product_image = ProductImage(product=product, image=image_url)
+                            product_image_list.append(product_image)
+
+                    # Store data
+                    with transaction.atomic():
+                        # bulk create the objects
+                        Product.objects.bulk_create(product_list, ignore_conflicts=True)
+                        ProductImage.objects.bulk_create(product_image_list, ignore_conflicts=True)
+
+                        # update the Task status to 1 where the Task.product_url matches the product url
+                        Task.objects.filter(product_url__in=[p.url for p in product_list]).update(status=1)
+                        print('Saved!')
 
 
 
