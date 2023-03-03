@@ -52,9 +52,10 @@ def export_products_to_xml(request):
     products = products[offset:offset+limit] or products
 
     context = {'products': products}
+    filename = f'makina-products-{offset}-{offset+limit}-{currency and currency.upper() or "ALL"}.xml'
     xml_string = loader.render_to_string('products.xml', context)
     response = HttpResponse(xml_string, content_type='application/xml')
-    response['Content-Disposition'] = f'attachment; filename="makina-products.xml"'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
 def makina_watermark_remover(request, pk, image):
