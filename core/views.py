@@ -33,17 +33,23 @@ def makina(request):
 
 
 def export_products_to_xml(request):
-    limit = request.GET.get('limit', None)
-    currency = request.GET.get('currency', '')
+    # get filters and set defautls
+    offset = int(request.GET.get('offset', 0))
+    limit = int(request.GET.get('limit', 100))
+    currency = request.GET.get('currency', None)
+
     # get all products
     products = Product.objects.all()
-    # apply currency filter
-    if currency.upper() == 'NONE':
+
+    # handle none currency and price case
+    if currency and currency.upper() == 'NONE':
         products = products.filter(currency='')
     else:
+        # filter by specific currency
         products = currency and products.filter(currency=currency.upper()) or products
-    # apply limit filter
-    products = limit and products[:int(limit)] or products
+
+    # apply offset and limit filters
+    products = products[offset:offset+limit] or products
 
     context = {'products': products}
     xml_string = loader.render_to_string('products.xml', context)

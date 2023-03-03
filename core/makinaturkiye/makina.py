@@ -167,7 +167,7 @@ class MakinaScraper:
 
 
         # get products from db
-        product_links = Task.objects.all().filter(status=0).order_by('product_url')
+        product_links = Task.objects.all().filter(status=0)
 
         chunk_size = 1000
         paginator = Paginator(product_links, per_page=chunk_size)
