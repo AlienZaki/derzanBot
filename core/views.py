@@ -8,6 +8,7 @@ import requests
 from django.core import serializers
 from .models import Product
 from django.template import loader
+from django.core.paginator import Paginator
 
 
 session = requests.session()
@@ -33,26 +34,27 @@ def makina(request):
 
 
 def export_products_to_xml(request):
-    # get filters and set defautls
-    offset = int(request.GET.get('offset', 0))
+    # Set default values for limit and offset
     limit = int(request.GET.get('limit', 100))
-    currency = request.GET.get('currency', None)
+    offset = int(request.GET.get('offset', 0))
 
-    # get all products
-    products = Product.objects.all()
-
-    # handle none currency and price case
-    if currency and currency.upper() == 'NONE':
-        products = products.filter(currency='')
+    # Retrieve products based on the currency filter
+    currency_filter = request.GET.get('currency', None)
+    if currency_filter:
+        if currency_filter.upper() == 'NONE':
+            products = Product.objects.filter(origin='Türkiye', currency='')
+        else:
+            products = Product.objects.filter(origin='Türkiye', currency=currency_filter.upper())
     else:
-        # filter by specific currency
-        products = currency and products.filter(currency=currency.upper()) or products
+        products = Product.objects.filter(origin='Türkiye').all()
 
-    # apply offset and limit filters
-    products = products[offset:offset+limit] or products
+    # Apply the limit and offset
+    paginator = Paginator(products, limit)
+    products_page = paginator.get_page(offset // limit + 1)
+    products = products_page.object_list
 
     context = {'products': products}
-    filename = f'makina-products-{offset}-{offset+limit}-{currency and currency.upper() or "ALL"}.xml'
+    filename = f'makina-products-{offset}-{offset+limit}-{currency_filter and currency_filter.upper() or "ALL"}.xml'
     xml_string = loader.render_to_string('products.xml', context)
     response = HttpResponse(xml_string, content_type='application/xml')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
