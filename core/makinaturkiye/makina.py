@@ -84,7 +84,8 @@ class MakinaScraper:
             currency_codes = {
                 'turkish lira': 'TL',
                 'usd': 'USD',
-                'eur': 'EUR'
+                'eur': 'EUR',
+                'jpy': 'JPY',
             }
             data['currency'] = currency and currency_codes[currency.lower()] or ''
 
