@@ -41,7 +41,7 @@ class MakinaScraper:
             r = self.session.get(product_url, timeout=3)
             # print(r.status_code)
             if r.status_code == 500:
-                print('=> SERVER ERROR 500')
+                print('=> SERVER ERROR 500', product_url)
                 return
             data = {'url': product_url, 'vendor': 'Makina', 'language': 'tr'}
             features = r.html.find('.urun-bilgi-tablo > table > tr')
