@@ -89,9 +89,12 @@ class MakinaScraper:
             data['currency'] = currency and currency_codes[currency.lower()] or ''
 
             price = currency and price.find('span')[-1].text or '0'
+
             if '.' in str(price) and ',' in str(price):
+                # Case 2.672.430,17 -> 2672430.17
                 price = price.replace('.', '').replace(',', '.')
             else:
+                # Case 123.456 -> 123456
                 price = price.replace('.', '').replace(',', '')
 
             price = price.split('-')[-1] if price and '-' in price else price
@@ -206,7 +209,7 @@ class MakinaScraper:
                     print('OK')
 
                 # Export
-                if i % 1 == 0 or i == len(futures): #len(page)
+                if i % 25 == 0 or i == len(futures): #len(page)
                     temp_products_data = products_data
                     products_data = []
                     print('Saving...')
