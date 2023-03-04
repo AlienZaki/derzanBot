@@ -42,11 +42,11 @@ def export_products_to_xml(request):
     currency_filter = request.GET.get('currency', None)
     if currency_filter:
         if currency_filter.upper() == 'NONE':
-            products = Product.objects.filter(origin='Türkiye', currency='')
+            products = Product.objects.filter(currency='')
         else:
-            products = Product.objects.filter(origin='Türkiye', currency=currency_filter.upper())
+            products = Product.objects.filter(currency=currency_filter.upper())
     else:
-        products = Product.objects.filter(origin='Türkiye').all()
+        products = Product.objects.all()
 
     # Apply the limit and offset
     paginator = Paginator(products, limit)
