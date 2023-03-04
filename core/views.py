@@ -48,10 +48,14 @@ def export_products_to_xml(request):
     else:
         products = Product.objects.all()
 
-    # Apply the limit and offset
-    paginator = Paginator(products, limit)
-    products_page = paginator.get_page(offset // limit + 1)
-    products = products_page.object_list
+    # Apply the limit and offset if limit != -1
+    if limit != -1:
+        # Apply the limit and offset
+        paginator = Paginator(products, limit)
+        products_page = paginator.get_page(offset // limit + 1)
+        products = products_page.object_list
+    else:
+        products = products[offset:]
 
     context = {'products': products}
     filename = f'makina-products-{offset}-{offset+limit}-{currency_filter and currency_filter.upper() or "ALL"}.xml'
