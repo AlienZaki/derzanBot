@@ -40,8 +40,11 @@ class MakinaScraper:
             time.sleep(1)
             r = self.session.get(product_url, timeout=3)
             # print(r.status_code)
+            if r.status_code == 500:
+                print('=> SERVER ERROR 500')
+                return
             data = {'url': product_url, 'vendor': 'Makina', 'language': 'tr'}
-            features = r.html.find('.urun-bilgi-tablo tr')
+            features = r.html.find('.urun-bilgi-tablo > table > tr')
             features_keys = {
                 'İlan No': 'code',
                 'Kategori': 'category',
@@ -54,10 +57,13 @@ class MakinaScraper:
             }
             # auto getting features
             for f in features:
-                key = f.find('td[class*=tabletitle]', first=True).text.replace(':', '').strip()
-                value = f.find('td[class*=tablevalue]', first=True).text
-                if key and key in features_keys:
-                    data[features_keys[key]] = value
+                # print(f.html)
+                key = f.find('td[class*=tabletitle]', first=True)
+                if key:
+                    key = key.text.replace(':', '').strip()
+                    value = f.find('td[class*=tablevalue]', first=True).text
+                    if key and key in features_keys:
+                        data[features_keys[key]] = value
 
             # data['Vendor URL'] = url
             data['name'] = r.html.find('h1.product-detail__title', first=True).text
@@ -108,7 +114,9 @@ class MakinaScraper:
             return self.get_product_details(product_url)
         except Exception as e:
             traceback.print_exc()
+            # print(r.text)
             print('=> ERROR:', product_url)
+
 
     def get_product_links(self, page_url):
         r = self.session.get(page_url)
@@ -168,6 +176,7 @@ class MakinaScraper:
 
         # get products from db
         product_links = Task.objects.all().filter(status=0)
+        print('=> Prodcuts:', product_links.count())
 
         chunk_size = 1000
         paginator = Paginator(product_links, per_page=chunk_size)
