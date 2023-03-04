@@ -88,9 +88,14 @@ class MakinaScraper:
             }
             data['currency'] = currency and currency_codes[currency.lower()] or ''
 
-            price = currency and price.find('span')[-1].text.replace('.', '').replace(',', '') or 0
+            price = currency and price.find('span')[-1].text or '0'
+            if '.' in str(price) and ',' in str(price):
+                price = price.replace('.', '').replace(',', '.')
+            else:
+                price = price.replace('.', '').replace(',', '')
+
             price = price.split('-')[-1] if price and '-' in price else price
-            data['price'] = int(price)
+            data['price'] = float(price)
 
             price_desc = r.html.find('.product-detail__kdv', first=True)
             data['price_description'] = price_desc and price_desc.text or ''
@@ -201,7 +206,7 @@ class MakinaScraper:
                     print('OK')
 
                 # Export
-                if i % 25 == 0 or i == len(futures): #len(page)
+                if i % 1 == 0 or i == len(futures): #len(page)
                     temp_products_data = products_data
                     products_data = []
                     print('Saving...')
@@ -242,7 +247,11 @@ class MakinaScraper:
                     # Store data
                     with transaction.atomic():
                         # bulk create the objects
-                        Product.objects.bulk_create(product_list, ignore_conflicts=True)
+                        try:
+                            Product.objects.bulk_create(product_list, ignore_conflicts=True)
+                        except Exception:
+                            traceback.print_exc()
+                            print(product_list[0].url)
                         ProductImage.objects.bulk_create(product_image_list, ignore_conflicts=True)
 
                         # update the Task status to 1 where the Task.product_url matches the product url
@@ -254,5 +263,6 @@ class MakinaScraper:
 if __name__ == '__main__':
     bot = MakinaScraper(host='165.22.19.183', max_workers=1)
     bot.run(force_refresh=False)
-    # res = bot.get_product_details('https://www.makinaturkiye.com/netmak-fr-2000-s-freze-makinasi-p-213063')
+    # print(Task.objects.filter(product_url='https://www.makinaturkiye.com/4x28-hareket-kabiliyetli-real-elips-tank-kaynak-sistemi-p-209151').delete())
+    # res = bot.get_product_details('https://www.makinaturkiye.com/4x28-hareket-kabiliyetli-real-elips-tank-kaynak-sistemi-p-209151')
     # print(res)
