@@ -14,7 +14,34 @@ from django.core.paginator import Paginator
 session = requests.session()
 
 
-def test(request, force_refresh, max_workers):
+def export_vivense_to_xml(request):
+    # # Set default values for limit and offset
+    # limit = int(request.GET.get('limit', 100))
+    # offset = int(request.GET.get('offset', 0))
+    #
+    # # Retrieve products
+    # products = Product.objects.all()
+    #
+    # # Apply the limit and offset if limit != -1
+    # if limit != -1:
+    #     # Apply the limit and offset
+    #     paginator = Paginator(products, limit)
+    #     products_page = paginator.get_page(offset // limit + 1)
+    #     products = products_page.object_list
+    # else:
+    #     products = products[offset:]
+    from .vivense.vivense import VivenseScraper
+    products = VivenseScraper().test()
+
+    context = {'products': products}
+    filename = f'vivense-products-{offset}-{offset + limit}.xml'
+    xml_string = loader.render_to_string('vivense/templates/vivense.xml', context)
+    response = HttpResponse(xml_string, content_type='application/xml')
+    # response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+def run_makina_scraper(request, force_refresh, max_workers):
     # scrape_products.delay()
     res = scrape_products.delay(host=request.get_host(), force_refresh=force_refresh, max_workers=max_workers)
     res = {
@@ -24,16 +51,7 @@ def test(request, force_refresh, max_workers):
     }
     return JsonResponse(res, safe=False)
 
-def makina(request):
-    bot = MakinaScraper(host=request.get_host())
-    products = bot.get_page_products('https://www.makinaturkiye.com/baski-kagit-matbaa-makinalari-ve-ekipmanlari-c-115466?page=1')
-    res = {
-        'products': products
-    }
-    return JsonResponse(res, safe=False)
-
-
-def export_products_to_xml(request):
+def export_makina_to_xml(request):
     # Set default values for limit and offset
     limit = int(request.GET.get('limit', 100))
     offset = int(request.GET.get('offset', 0))
@@ -59,7 +77,7 @@ def export_products_to_xml(request):
 
     context = {'products': products}
     filename = f'makina-products-{offset}-{offset+limit}-{currency_filter and currency_filter.upper() or "ALL"}.xml'
-    xml_string = loader.render_to_string('products.xml', context)
+    xml_string = loader.render_to_string('makina.xml', context)
     response = HttpResponse(xml_string, content_type='application/xml')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response

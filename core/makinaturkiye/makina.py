@@ -8,16 +8,17 @@ from fake_useragent import UserAgent
 ua = UserAgent()
 
 try:
-    from core.models import Product, ProductImage, Task
+    from core.models import Product, ProductImage, ProductURL, Vendor
     from django.db import transaction
     from django.core.paginator import Paginator
 except:
     import os, django
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "derzanBot.settings")
     django.setup()
-    from core.models import Product, ProductImage, Task
+    from core.models import Product, ProductImage, ProductURL, Vendor
     from django.db import transaction
     from django.core.paginator import Paginator
+    from django.db.models import Count
 
 
 class MakinaScraper:
@@ -34,6 +35,67 @@ class MakinaScraper:
         self.session.headers['user-agent'] = ua.google
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
+        # create vendor if not exist
+        vendor_name = 'Makina'
+        vendor_website = 'https://www.makinaturkiye.com'
+
+        try:
+            self.vendor = Vendor.objects.get(name=vendor_name)
+        except Vendor.DoesNotExist:
+            self.vendor = Vendor.objects.create(name=vendor_name, website=vendor_website)
+
+
+    def save_products(self, products):
+        print('Saving...')
+        # create a list of Product and ProductImage objects to insert
+        product_list = []
+        product_image_list = []
+
+        for data in products:
+            # create the Product objects
+            # print('=>', data)
+            product = Product(
+                id=f'{self.vendor}_{data["code"]}',
+                vendor=self.vendor,
+                url=data['url'],
+                language=data['language'],
+                name=data['name'],
+                code=data['code'],
+                category=data['category'],
+                brand=data.get('brand'),
+                model=data.get('model'),
+                condition=data.get('condition'),
+                origin=data.get('origin'),
+                delivery=data.get('delivery'),
+                guarantee=data.get('guarantee'),
+                currency=data.get('currency'),
+                price=data.get('price'),
+                price_description=data.get('price_description'),
+                phone=data.get('phone'),
+                whatsapp=data.get('whatsapp'),
+                description=data.get('description'),
+
+            )
+            product_list.append(product)
+
+            # create the ProductImage objects
+            for image_url in data['images']:
+                product_image_list.append(ProductImage(product_id=product.pk, url=image_url))
+
+        # Store data
+        with transaction.atomic():
+            # bulk create the objects
+            try:
+                Product.objects.bulk_create(product_list, ignore_conflicts=True)
+            except Exception:
+                traceback.print_exc()
+                print(product_list[0].url)
+
+            ProductImage.objects.bulk_create(product_image_list, ignore_conflicts=True)
+
+            # update the Task status to 1 where the Task.product_url matches the product url
+            self.vendor.products_urls.filter(url__in=[p.url for p in product_list]).update(status=1)
+            print('Saved!')
 
     def get_product_details(self, product_url):
         try:
@@ -49,10 +111,10 @@ class MakinaScraper:
                 'İlan No': 'code',
                 'Kategori': 'category',
                 'Marka': 'brand',
-                'Ürün Tipi': 'model_type',
+                'Ürün Tipi': 'model',
                 'Ürün Durumu': 'condition',
                 'Menşei': 'origin',
-                'Teslim Durumu': 'delivery_status',
+                'Teslim Durumu': 'delivery',
                 'Kısa Detay': 'guarantee',
             }
             # auto getting features
@@ -126,7 +188,6 @@ class MakinaScraper:
             # print(r.text)
             print('=> ERROR:', product_url)
 
-
     def get_product_links(self, page_url):
         r = self.session.get(page_url)
         urls = r.html.find('#product-container .product-list-mt__inner > a[class*=mt__link]')
@@ -180,11 +241,11 @@ class MakinaScraper:
             for cat in cats[:]:
                 links = self.get_category_products(cat)
                 product_links.extend(links)
-                Task.objects.bulk_create([Task(product_url=i) for i in links], ignore_conflicts=True)
+                self.vendor.products_urls.bulk_create([ProductURL(url=i, vendor=self.vendor) for i in links], ignore_conflicts=True)
 
 
         # get products from db
-        product_links = Task.objects.all().filter(status=0)
+        product_links = ProductURL.objects.all().filter(status=0)
         print('=> Prodcuts:', product_links.count())
 
         chunk_size = 1000
@@ -196,7 +257,7 @@ class MakinaScraper:
 
             futures = []
             for product in page[:]:
-                futures.append(self.executor.submit(self.get_product_details, product.product_url))
+                futures.append(self.executor.submit(self.get_product_details, product.url))
 
 
             products_data = []
@@ -210,63 +271,23 @@ class MakinaScraper:
                     print('OK')
 
                 # Export
-                if i % 25 == 0 or i == len(futures): #len(page)
-                    temp_products_data = products_data
+                if i % 1 == 0 or i == len(futures): #len(page)
+                    temp = products_data.copy()
                     products_data = []
-                    print('Saving...')
-                    # create a list of Product and ProductImage objects to insert
-                    product_list = []
-                    product_image_list = []
-
-                    for data in temp_products_data:
-                        # create the Product objects
-                        # print('=>', data)
-                        product = Product(
-                            vendor=data['vendor'],
-                            url=data['url'],
-                            language=data['language'],
-                            name=data['name'],
-                            code=data['code'],
-                            category=data['category'],
-                            brand=data.get('brand'),
-                            model_type=data.get('model_type'),
-                            condition=data.get('condition'),
-                            origin=data.get('origin'),
-                            delivery_status=data.get('delivery_status'),
-                            guarantee=data.get('guarantee'),
-                            currency=data.get('currency'),
-                            price=data.get('price'),
-                            price_description=data.get('price_description'),
-                            phone=data.get('phone'),
-                            whatsapp=data.get('whatsapp'),
-                            description=data.get('description'),
-                        )
-                        product_list.append(product)
-
-                        # create the ProductImage objects
-                        for image_url in data['images']:
-                            product_image = ProductImage(product=product, image=image_url)
-                            product_image_list.append(product_image)
-
-                    # Store data
-                    with transaction.atomic():
-                        # bulk create the objects
-                        try:
-                            Product.objects.bulk_create(product_list, ignore_conflicts=True)
-                        except Exception:
-                            traceback.print_exc()
-                            print(product_list[0].url)
-                        ProductImage.objects.bulk_create(product_image_list, ignore_conflicts=True)
-
-                        # update the Task status to 1 where the Task.product_url matches the product url
-                        Task.objects.filter(product_url__in=[p.url for p in product_list]).update(status=1)
-                        print('Saved!')
-
+                    self.save_products(temp)
 
 
 if __name__ == '__main__':
     bot = MakinaScraper(host='165.22.19.183', max_workers=1)
-    bot.run(force_refresh=False)
-    # print(Task.objects.filter(product_url='https://www.makinaturkiye.com/4x28-hareket-kabiliyetli-real-elips-tank-kaynak-sistemi-p-209151').delete())
-    # res = bot.get_product_details('https://www.makinaturkiye.com/4x28-hareket-kabiliyetli-real-elips-tank-kaynak-sistemi-p-209151')
-    # print(res)
+    bot.run(force_refresh=False, )
+    print(ProductURL.objects.filter(product_url='https://www.makinaturkiye.com/4x28-hareket-kabiliyetli-real-elips-tank-kaynak-sistemi-p-209151').delete())
+    res = bot.get_product_details('https://www.makinaturkiye.com/4x28-hareket-kabiliyetli-real-elips-tank-kaynak-sistemi-p-209151')
+    print(res)
+
+    # print(Product.objects.all().count())
+    # print(Product.objects.filter(origin='Türkiye').count())
+
+    # print(Product.objects.filter(currency='TL').count())
+    # for item in Product.objects.values('currency').annotate(total=Count('code')):
+    #     print(item['currency'], item['total'])
+    #

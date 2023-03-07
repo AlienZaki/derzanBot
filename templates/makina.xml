@@ -9,10 +9,10 @@
             <MainCategory>Endüstriyel Makine</MainCategory>
 			<Category>{{ product.category }}</Category>
 			<Brand>{{ product.brand|default:'' }}</Brand>
-			<ModelType>{{ product.model_type|default:'' }}</ModelType>
+			<ModelType>{{ product.model|default:'' }}</ModelType>
             <Condition>{{ product.condition|default:'' }}</Condition>
 			<Origin>{{ product.origin|default:'' }}</Origin>
-			<Delivery_status>{{ product.delivery_status|default:'' }}</Delivery_status>
+			<Delivery_status>{{ product.delivery|default:'' }}</Delivery_status>
 			<Guarantee>{{ product.guarantee|default:'' }}</Guarantee>
             <Currency>{{ product.currency|default:'' }}</Currency>
 			<Price>{{ product.price }}</Price>
@@ -22,7 +22,7 @@
 			<Description><![CDATA[{{ product.description|safe }}]]></Description>
             <Source>{{ product.url }}</Source>
             <Images>{% for img in product.images.all %}
-                <Image{{ forloop.counter }}>{{ img.image }}</Image{{ forloop.counter }}>{% endfor %}
+                <Image{{ forloop.counter }}>{{ img.url }}</Image{{ forloop.counter }}>{% endfor %}
             </Images>
         </Product>{% endfor %}
     </Products>

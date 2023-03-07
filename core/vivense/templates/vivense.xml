@@ -1,0 +1,29 @@
+<Root>
+    <Products>
+        {% for product in products %}
+        <Product>
+{#            <Vendor>{{ product.vendor }}</Vendor>#}
+{#            <Language>{{ product.language }}</Language>#}
+            <ProductName>{{ product.name }}</ProductName>
+			<ProductCode>{{ product.code }}</ProductCode>
+            <MainCategory>Endüstriyel Makine</MainCategory>
+			<Category>{{ product.category }}</Category>
+{#			<Brand>{{ product.brand|default:'' }}</Brand>#}
+{#			<ModelType>{{ product.model_type|default:'' }}</ModelType>#}
+{#            <Condition>{{ product.condition|default:'' }}</Condition>#}
+{#			<Origin>{{ product.origin|default:'' }}</Origin>#}
+{#			<Delivery_status>{{ product.delivery_status|default:'' }}</Delivery_status>#}
+{#			<Guarantee>{{ product.guarantee|default:'' }}</Guarantee>#}
+{#            <Currency>{{ product.currency|default:'' }}</Currency>#}
+			<Price>{{ product.price }}</Price>
+			<Price_Description>{{ product.price_description|default:'' }}</Price_Description>
+{#			<Phone>{{ product.phone|default:'' }}</Phone>#}
+{#			<Whatsapp>{{ product.whatsapp|default:'' }}</Whatsapp>#}
+{#			<Description><![CDATA[{{ product.description|safe }}]]></Description>#}
+            <Source>{{ product.url }}</Source>
+            <Images>{% for img in product.images.all %}
+                <Image{{ forloop.counter }}>{{ img.image }}</Image{{ forloop.counter }}>{% endfor %}
+            </Images>
+        </Product>{% endfor %}
+    </Products>
+</Root>
