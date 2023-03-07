@@ -74,7 +74,7 @@ class ProductImage(models.Model):
 class ProductURL(models.Model):
     vendor = models.ForeignKey(Vendor, related_name='products_urls', on_delete=models.CASCADE)
     url = models.URLField(unique=True)
-    status = models.BooleanField(default=False, db_index=True)
+    status = models.IntegerField(default=0, db_index=True)
 
     class Meta:
         db_table = "products_urls"

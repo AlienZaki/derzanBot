@@ -127,6 +127,12 @@ class MakinaScraper:
                     if key and key in features_keys:
                         data[features_keys[key]] = value
 
+            # Special case for ignoring non turkey origin
+            if data['origin'] != 'Türkiye':
+                print('=> Origin:', data['origin'])
+                self.vendor.products_urls.filter(url=product_url).update(status=-1)
+                return
+
             # data['Vendor URL'] = url
             data['name'] = r.html.find('h1.product-detail__title', first=True).text
             data['code'] = int(data['code'].replace('#', ''))
@@ -266,12 +272,12 @@ class MakinaScraper:
 
             for i, future in enumerate(as_completed(futures), 1):
                 product_details = future.result()
-                if product_details:
+                if product_details and product_details:
                     products_data.append(product_details)
                     print('OK')
 
                 # Export
-                if i % 1 == 0 or i == len(futures): #len(page)
+                if i % 50 == 0 or i == len(futures): #len(page)
                     temp = products_data.copy()
                     products_data = []
                     self.save_products(temp)
@@ -280,7 +286,6 @@ class MakinaScraper:
 if __name__ == '__main__':
     bot = MakinaScraper(host='165.22.19.183', max_workers=1)
     bot.run(force_refresh=False, )
-    print(ProductURL.objects.filter(product_url='https://www.makinaturkiye.com/4x28-hareket-kabiliyetli-real-elips-tank-kaynak-sistemi-p-209151').delete())
     res = bot.get_product_details('https://www.makinaturkiye.com/4x28-hareket-kabiliyetli-real-elips-tank-kaynak-sistemi-p-209151')
     print(res)
 
