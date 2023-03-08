@@ -251,7 +251,7 @@ class MakinaScraper:
 
 
         # get products from db
-        product_links = ProductURL.objects.all().filter(status=0)
+        product_links = self.vendor.products_urls.filter(status=0).all()
         print('=> Prodcuts:', product_links.count())
 
         chunk_size = 1000

@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from PIL import Image
 import requests
 from django.core import serializers
-from .models import Product
+from .models import Product, Vendor
 from django.template import loader
 from django.core.paginator import Paginator
 
@@ -15,29 +15,30 @@ session = requests.session()
 
 
 def export_vivense_to_xml(request):
-    # # Set default values for limit and offset
-    # limit = int(request.GET.get('limit', 100))
-    # offset = int(request.GET.get('offset', 0))
-    #
-    # # Retrieve products
-    # products = Product.objects.all()
-    #
-    # # Apply the limit and offset if limit != -1
-    # if limit != -1:
-    #     # Apply the limit and offset
-    #     paginator = Paginator(products, limit)
-    #     products_page = paginator.get_page(offset // limit + 1)
-    #     products = products_page.object_list
-    # else:
-    #     products = products[offset:]
-    from .vivense.vivense import VivenseScraper
-    products = VivenseScraper().test()
+    # Set default values for limit and offset
+    limit = int(request.GET.get('limit', 100))
+    offset = int(request.GET.get('offset', 0))
+
+    # Retrieve products
+    products = Vendor.objects.get(name='Vivense').products.all()
+
+    # Apply the limit and offset if limit != -1
+    if limit != -1:
+        # Apply the limit and offset
+        paginator = Paginator(products, limit)
+        products_page = paginator.get_page(offset // limit + 1)
+        products = products_page.object_list
+    else:
+        products = products[offset:]
+
+    for p in products:
+        p.variant_key = p.variant_key and p.variant_key.replace(' ', '_')
 
     context = {'products': products}
     filename = f'vivense-products-{offset}-{offset + limit}.xml'
-    xml_string = loader.render_to_string('vivense/templates/vivense.xml', context)
+    xml_string = loader.render_to_string('vivense.xml', context)
     response = HttpResponse(xml_string, content_type='application/xml')
-    # response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
 
@@ -60,11 +61,11 @@ def export_makina_to_xml(request):
     currency_filter = request.GET.get('currency', None)
     if currency_filter:
         if currency_filter.upper() == 'NONE':
-            products = Product.objects.filter(currency='')
+            products = Vendor.objects.get(name='Makina').products.filter(currency='')
         else:
-            products = Product.objects.filter(currency=currency_filter.upper())
+            products = Vendor.objects.get(name='Makina').products.filter(currency=currency_filter.upper())
     else:
-        products = Product.objects.all()
+        products = Vendor.objects.get(name='Makina').products.all()
 
     # Apply the limit and offset if limit != -1
     if limit != -1:

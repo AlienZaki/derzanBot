@@ -23,7 +23,9 @@ class Product(models.Model):
     language = models.CharField(max_length=100, default='tr')
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=500)
-    variation_group = models.CharField(max_length=100, null=True, blank=True)
+    variant_group = models.CharField(max_length=100, null=True, blank=True)
+    variant_key = models.CharField(max_length=100, null=True, blank=True)
+    variant_value = models.CharField(max_length=100, null=True, blank=True)
     brand = models.CharField(max_length=255, null=True, blank=True)
     model = models.CharField(max_length=255, null=True, blank=True)
     condition = models.CharField(max_length=255, null=True, blank=True)
@@ -48,16 +50,16 @@ class Product(models.Model):
         return f'{self.code} - {self.name}'
 
 
-class ProductVariation(models.Model):
-    product = models.ForeignKey(Product, related_name='variations', db_column='product_code', on_delete=models.CASCADE)
-    key = models.CharField(max_length=255, null=True, blank=True, default='')
-    value = models.CharField(max_length=255, null=True, blank=True, default='')
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = "product_variation"
+# class ProductVariant(models.Model):
+#     product = models.ForeignKey(Product, related_name='variants', db_column='product_code', on_delete=models.CASCADE)
+#     key = models.CharField(max_length=255, null=True, blank=True, default='')
+#     value = models.CharField(max_length=255, null=True, blank=True, default='')
+#
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+#
+#     class Meta:
+#         db_table = "product_variants"
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name='images', db_column='product_code', on_delete=models.CASCADE)

@@ -1,0 +1,26 @@
+<Root>
+    <Products>
+        {% for product in products %}
+        <Product>
+            <Vendor>Mobilya</Vendor>
+            <Language>{{ product.language }}</Language>
+            <ProductName>{{ product.name }}</ProductName>
+			<ProductCode>{{ product.code }}</ProductCode>
+            <MainCategory>Ev ve Bahçe / Mobilya</MainCategory>
+			<Category>Ev ve Bahçe / Mobilya///{{ product.category }}</Category>
+            <VariationGroup>{{ product.variant_group|default:'' }}</VariationGroup>
+            {% if product.variant_key %}
+                {% with "<"|add:product.variant_key|add:">"|add:product.variant_value|add:"</"|add:product.variant_key|add:">" as template %}
+                    {{ template|safe }}
+                {% endwith %}
+            {% endif %}
+			<Price>{{ product.price }}</Price>
+			<DiscountedPrice>{{ product.discounted_price|default:'' }}</DiscountedPrice>
+			<Description><![CDATA[{{ product.description|safe }}]]></Description>
+            <Source>{{ product.url }}</Source>
+            <Images>{% for img in product.images.all %}
+                <Image{{ forloop.counter }}>{{ img.url }}</Image{{ forloop.counter }}>{% endfor %}
+            </Images>
+        </Product>{% endfor %}
+    </Products>
+</Root>
