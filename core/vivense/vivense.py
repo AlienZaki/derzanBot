@@ -69,8 +69,8 @@ class VivenseScraper:
             # create the Product objects
             # print('=>', data)
             product = Product(
-                id=f'{bot.vendor}_{data["code"]}',
-                vendor=bot.vendor,
+                id=f'{self.vendor}_{data["code"]}',
+                vendor=self.vendor,
                 variant_group=data['variant_group'],
                 variant_key=data['variant_key'],
                 variant_value=data['variant_value'],
