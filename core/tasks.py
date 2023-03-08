@@ -1,21 +1,21 @@
 # tasks.py
 from celery import shared_task
 from core.makinaturkiye.makina import MakinaScraper
-from core.makinaturkiye.exporter import export_products_to_XML
+from core.vivense.vivense import VivenseScraper
 import time
 
 
 @shared_task()
-def mytask():
+def vivense_scraper_task(host, force_refresh, max_workers):
     print('Task Started...')
-    time.sleep(5)
-    print('Task Finished')
+    VivenseScraper(host, max_workers=max_workers).run(force_refresh)
+    print('Task Finished.')
 
 
 @shared_task()
-def scrape_products(host, force_refresh, max_workers):
+def makina_scraper_task(host, force_refresh, max_workers):
     print('Task Started...')
     MakinaScraper(host, max_workers=max_workers).run(force_refresh)
     print('Task Finished.')
-    # return products
+
 

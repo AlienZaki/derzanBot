@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-from .makinaturkiye.makina import MakinaScraper
-from .tasks import scrape_products, mytask
+from .tasks import makina_scraper_task, vivense_scraper_task
 from django.http import HttpResponseRedirect
 from PIL import Image
 import requests
@@ -13,6 +12,14 @@ from django.core.paginator import Paginator
 
 session = requests.session()
 
+
+def run_vivense_scraper(request, force_refresh, max_workers):
+    res = vivense_scraper_task.delay(host=request.get_host(), force_refresh=force_refresh, max_workers=max_workers)
+    res = {
+        'success': True,
+        'data': res.id
+    }
+    return JsonResponse(res, safe=False)
 
 def export_vivense_to_xml(request):
     # Set default values for limit and offset
@@ -44,7 +51,7 @@ def export_vivense_to_xml(request):
 
 def run_makina_scraper(request, force_refresh, max_workers):
     # scrape_products.delay()
-    res = scrape_products.delay(host=request.get_host(), force_refresh=force_refresh, max_workers=max_workers)
+    res = makina_scraper_task.delay(host=request.get_host(), force_refresh=force_refresh, max_workers=max_workers)
     res = {
         'success': True,
         # 'products': run()
