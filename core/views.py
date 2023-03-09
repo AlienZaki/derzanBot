@@ -13,7 +13,10 @@ from django.core.paginator import Paginator
 session = requests.session()
 
 
-def run_vivense_scraper(request, force_refresh, max_workers):
+def run_vivense_scraper(request):
+    max_workers = int(request.GET.get('workers', 10))
+    force_refresh = int(request.GET.get('refresh', 0))
+
     res = vivense_scraper_task.delay(host=request.get_host(), force_refresh=force_refresh, max_workers=max_workers)
     res = {
         'success': True,
@@ -25,6 +28,7 @@ def export_vivense_to_xml(request):
     # Set default values for limit and offset
     limit = int(request.GET.get('limit', 100))
     offset = int(request.GET.get('offset', 0))
+    stock = int(request.GET.get('stock', 1))
 
     # Retrieve products
     products = Vendor.objects.get(name='Vivense').products.all()
@@ -41,7 +45,7 @@ def export_vivense_to_xml(request):
     for p in products:
         p.variant_key = p.variant_key and p.variant_key.replace(' ', '_')
 
-    context = {'products': products}
+    context = {'products': products, 'stock': stock}
     filename = f'vivense-products-{offset}-{offset + limit}.xml'
     xml_string = loader.render_to_string('vivense.xml', context)
     response = HttpResponse(xml_string, content_type='application/xml')

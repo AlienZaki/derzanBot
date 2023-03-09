@@ -16,6 +16,7 @@
             {% endif %}
 			<Price>{{ product.price }}</Price>
 			<DiscountedPrice>{{ product.discounted_price|default:'' }}</DiscountedPrice>
+            <stock>{{ stock }}</stock>
 			<Description><![CDATA[{{ product.description|safe }}]]></Description>
             <Source>{{ product.url }}</Source>
             <Images>{% for img in product.images.all %}

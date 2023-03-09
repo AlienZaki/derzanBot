@@ -150,7 +150,7 @@ class VivenseScraper:
                 attributes.append((key, value))
             # print(key, a['type'], value)
 
-        attributes_html = '\n'.join([f'<tr><td>{key}</td><td>{value}</td></tr>' for key, value in attributes])
+        attributes_html = '\n'.join([f'<tr><th>{key}</th><td>{value}</td></tr>' for key, value in attributes])
         data['description'] = f"""<div class="panel-body" style="display: block;">
                                         <table class="table">
                                             <tbody id="producttables" class="desctab">
@@ -256,9 +256,16 @@ class VivenseScraper:
 
         product_links = []
 
+
         if force_refresh:
+            # Update product urls and delete all products
+            print('=> Deleteting Products URLS...')
+            self.vendor.products_urls.all().delete()
+            print('=> Deleting Products...')
+            self.vendor.products.all().delete()
+
             # get products from categories
-            cats = self.get_categories()[::-1]
+            cats = self.get_categories()
             for cat in cats:
                 links = self.get_category_products(cat)
                 product_links.extend(links)
@@ -300,7 +307,7 @@ class VivenseScraper:
 
 if __name__ == '__main__':
     bot = VivenseScraper(max_workers=10)
-    bot.run(force_refresh=False)
+    bot.run(force_refresh=True)
 
     # bot.vendor.products_urls.filter(status=1).update(status=0)
     # bot.vendor.products.all().delete()
