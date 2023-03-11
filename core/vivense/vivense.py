@@ -23,7 +23,7 @@ except:
 
 class VivenseScraper:
 
-    def __init__(self, host='localhost:8000', max_workers=10):
+    def __init__(self, host='localhost:8000', max_workers=10, proxy=False):
         self.session = HTMLSession()
         self.host = host
         logging.basicConfig(
@@ -33,6 +33,12 @@ class VivenseScraper:
             # filename='logs.log'
         )
         self.session.headers['user-agent'] = ua.google
+        self.proxies = {
+            'http': 'http://brd-customer-hl_61f716b8-zone-derzan:ki4qr40s46qg@zproxy.lum-superproxy.io:22225',
+            'https': 'https://brd-customer-hl_61f716b8-zone-derzan:ki4qr40s46qg@zproxy.lum-superproxy.io:22225'
+        }
+        self.proxy = proxy
+        self.update_session_proxy()
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
         # create vendor if not exist
@@ -58,6 +64,11 @@ class VivenseScraper:
                         matches.extend(self.search_nested_dict(item, search_key))
         return matches
 
+    def update_session_proxy(self):
+        if self.proxy:
+            self.session = HTMLSession()
+            self.session.headers['user-agent'] = ua.google
+            self.session.proxies = self.proxies
     def save_products(self, products):
         print('Saving...')
         # create a list of Product and ProductImage objects to insert
@@ -202,14 +213,19 @@ class VivenseScraper:
             print('ERROR:', url)
     def get_product_details(self, url):
         try:
+            self.update_session_proxy()
             r = self.session.get(url)
-            data = r.json()['items'][0]
-            # get variant and only for the first group
-            vsins = data['variantGroup'] and [p['product']['vsin'] for p in data['variantGroup']['groups'][0]['products']]
-            if vsins:
-                return [self.get_product_details_by_vsin(vsin) for vsin in vsins]
+            if r.status_code == 200:
+                data = r.json()['items'][0]
+                # get variant and only for the first group
+                vsins = data['variantGroup'] and [p['product']['vsin'] for p in data['variantGroup']['groups'][0]['products']]
+                if vsins:
+                    return [self.get_product_details_by_vsin(vsin) for vsin in vsins]
+                else:
+                    return [self.parse_product_data(data)]
             else:
-                return [self.parse_product_data(data)]
+                print(r.text)
+                print('ERROR:', url)
         except Exception:
             traceback.print_exc()
             print('ERROR:', url)
@@ -252,25 +268,25 @@ class VivenseScraper:
                       for i in links if 'vsin' in i["params"]]
         return categories
 
-    def run(self, force_refresh=False):
-
+    def flush_products_from_db(self):
+        # Update product urls and delete all products
         product_links = []
+        print('=> Deleteting Products URLS...')
+        self.vendor.products_urls.all().delete()
+        print('=> Deleting Products...')
+        self.vendor.products.all().delete()
 
+        # get products from categories
+        cats = self.get_categories()
+        for cat in cats:
+            links = self.get_category_products(cat)
+            product_links.extend(links)
+            self.vendor.products_urls.bulk_create([ProductURL(url=i, vendor=self.vendor, status=0)
+                                                   for i in links], ignore_conflicts=True)
 
+    def run(self, force_refresh=False):
         if force_refresh:
-            # Update product urls and delete all products
-            print('=> Deleteting Products URLS...')
-            self.vendor.products_urls.all().delete()
-            print('=> Deleting Products...')
-            self.vendor.products.all().delete()
-
-            # get products from categories
-            cats = self.get_categories()
-            for cat in cats:
-                links = self.get_category_products(cat)
-                product_links.extend(links)
-                self.vendor.products_urls.bulk_create([ProductURL(url=i, vendor=self.vendor, status=0) for i in links], ignore_conflicts=True)
-
+            self.flush_products_from_db()
 
         # get products from db
         product_links = self.vendor.products_urls.filter(status=0).all()
@@ -306,8 +322,8 @@ class VivenseScraper:
 
 
 if __name__ == '__main__':
-    bot = VivenseScraper(max_workers=10)
-    bot.run(force_refresh=True)
+    bot = VivenseScraper(max_workers=10, proxy=True)
+    bot.run(force_refresh=False)
 
     # bot.vendor.products_urls.filter(status=1).update(status=0)
     # bot.vendor.products.all().delete()
