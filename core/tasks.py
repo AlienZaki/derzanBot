@@ -6,9 +6,9 @@ import time
 
 
 @shared_task()
-def vivense_scraper_task(host, force_refresh, max_workers):
+def vivense_scraper_task(host, force_refresh, max_workers, proxy):
     print('Task Started...')
-    VivenseScraper(host, max_workers=max_workers).run(force_refresh)
+    VivenseScraper(host, max_workers=max_workers, proxy=proxy).run(force_refresh)
     print('Task Finished.')
 
 
