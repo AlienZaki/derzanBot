@@ -16,7 +16,7 @@ session = requests.session()
 def run_vivense_scraper(request):
     max_workers = int(request.GET.get('workers', 10))
     force_refresh = int(request.GET.get('refresh', 0))
-    proxy = force_refresh = int(request.GET.get('proxy', 0))
+    proxy = int(request.GET.get('proxy', 0))
 
 
     res = vivense_scraper_task.delay(host=request.get_host(), force_refresh=force_refresh, max_workers=max_workers, proxy=proxy)
