@@ -291,7 +291,9 @@ class VivenseScraper:
 
         # get products from db
         product_links = self.vendor.products_urls.filter(status=0).all()
-        print('=> Prodcuts:', product_links.count())
+        total_products = product_links.count()
+        counter = 0
+        print('=> Prodcuts:', total_products)
 
         chunk_size = 1000
         paginator = Paginator(product_links, per_page=chunk_size)
@@ -309,6 +311,8 @@ class VivenseScraper:
             #     product_details = self.get_product_details(product.product_url)
 
             for i, future in enumerate(as_completed(futures), 1):
+                counter += 1
+                print(f'=> Products [{counter}/{total_products}]')
                 product_details = future.result()
                 if product_details and product_details:
                     products_data.extend(product_details)
