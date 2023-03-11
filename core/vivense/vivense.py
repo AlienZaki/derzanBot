@@ -262,7 +262,7 @@ class VivenseScraper:
         return product_links
 
     def get_categories(self):
-        r = requests.get('https://app.vivense.com/menu')
+        r = self.session.get('https://app.vivense.com/menu')
         links = self.search_nested_dict(r.json(), 'link')
         categories = [f'https://app.vivense.com/Products/listing/search/{i["alias"]}-c-{i["params"]["vsin"]}'
                       for i in links if 'vsin' in i["params"]]
@@ -278,7 +278,8 @@ class VivenseScraper:
 
         # get products from categories
         cats = self.get_categories()
-        for cat in cats:
+        for i, cat in enumerate(cats, 1):
+            print(f'=> Categories: [{i}/{len(cats)}]')
             links = self.get_category_products(cat)
             product_links.extend(links)
             self.vendor.products_urls.bulk_create([ProductURL(url=i, vendor=self.vendor, status=0)
@@ -323,7 +324,7 @@ class VivenseScraper:
 
 if __name__ == '__main__':
     bot = VivenseScraper(max_workers=10, proxy=True)
-    bot.run(force_refresh=False)
+    bot.run(force_refresh=True)
 
     # bot.vendor.products_urls.filter(status=1).update(status=0)
     # bot.vendor.products.all().delete()
